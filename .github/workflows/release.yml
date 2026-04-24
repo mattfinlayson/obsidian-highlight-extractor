@@ -47,6 +47,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -60,22 +62,24 @@ jobs:
       - name: Build
         run: npm run build
       
-      - name: Get version
-        id: version
-        run: echo "VERSION=${TAG#v}" >> $GITHUB_OUTPUT
-        env:
-          TAG: ${{ github.ref_name }}
+      - name: Create Tag
+        run: |
+          TAG="v$(date +%Y%m%d%H%M%S)-$(echo ${{ github.sha }} | cut -c1-8)"
+          git tag "$TAG"
+          git push origin "$TAG"
+          echo "TAG=$TAG" >> $GITHUB_OUTPUT
+        id: tag
       
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.tag.outputs.TAG }}
           files: |
             main.js
             manifest.json
             styles.css
           generate_release_notes: |
-            ## Highlight Extractor v${{ github.sha }}
-            
+            ## Highlight Extractor
             Built from: ${{ github.sha }}
             Commit: ${{ github.event.head_commit.message }}
         env:
