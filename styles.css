@@ -1,0 +1,32 @@
+/* Highlight Extractor Plugin Styles */
+
+/* Styling for extraction section markers in Live Preview mode */
+.markdown-preview-view .highlight-extraction-section,
+.markdown-source-view .highlight-extraction-section {
+  background-color: var(--background-secondary);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin: 8px 0;
+}
+
+/* Optional: subtle left border indicator */
+.markdown-preview-view .highlight-extraction-section {
+  border-left: 3px solid var(--accent-active);
+}
+
+/* Style for individual highlight blocks in preview */
+.markdown-preview-view .extracted-highlight {
+  border-left: 2px solid var(--text-accent);
+  padding-left: 8px;
+  margin: 8px 0;
+  font-style: italic;
+}
+
+/* Color tag badges */
+.highlight-tag {
+  background-color: var(--tag-background);
+  color: var(--tag-color);
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-size: 0.85em;
+}

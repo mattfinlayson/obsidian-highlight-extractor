@@ -1,0 +1,19 @@
+{
+  "name": "obsidian-highlight-extractor",
+  "version": "1.0.0",
+  "description": "Extract highlights and comments from Obsidian documents for LLM consumption",
+  "main": "main.js",
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "test": "jest"
+  },
+  "keywords": ["obsidian", "plugin", "highlights", "llm"],
+  "author": "Matthew Finlayson",
+  "license": "MIT",
+  "devDependencies": {
+    "@obsidianmd/obsidian-api": "^1.0.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

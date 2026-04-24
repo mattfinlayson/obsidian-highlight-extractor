@@ -1,0 +1,9 @@
+{
+  "id": "highlight-extractor",
+  "name": "Highlight Extractor",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "Extract highlights and comments from documents and format them for LLM consumption",
+  "author": "Matthew Finlayson",
+  "license": "MIT"
+}
