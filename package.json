@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npm run build && npm run bundle -- --watch",
     "build": "tsc",
-    "bundle": "esbuild src/main.ts --bundle --format=cjs --outfile=main.js --external:obsidian --platform=node",
+    "bundle": "esbuild src/main.ts --bundle --format=cjs --outfile=main.js --external:obsidian --platform=browser",
     "test": "jest"
   },
   "keywords": [
