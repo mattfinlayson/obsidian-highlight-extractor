@@ -4,15 +4,22 @@
   "description": "Extract highlights and comments from Obsidian documents for LLM consumption",
   "main": "main.js",
   "scripts": {
-    "dev": "tsc --watch",
+    "dev": "npm run build && npm run bundle -- --watch",
     "build": "tsc",
+    "bundle": "esbuild src/main.ts --bundle --format=cjs --outfile=main.js --external:obsidian --platform=node",
     "test": "jest"
   },
-  "keywords": ["obsidian", "plugin", "highlights", "llm"],
+  "keywords": [
+    "obsidian",
+    "plugin",
+    "highlights",
+    "llm"
+  ],
   "author": "Matthew Finlayson",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "esbuild": "^0.28.0",
     "typescript": "^5.0.0"
   }
 }
