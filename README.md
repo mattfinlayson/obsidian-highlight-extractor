@@ -87,9 +87,12 @@ The extracted section is clearly marked with `<!-- highlights -->` markers, so y
 
 ## Dependencies
 
-**Required**: [Highlightr](https://github.com/nickmackenzie/obsidian-highlightr)
+**Requires a plugin that enables `==highlight==` syntax**
 
-This plugin relies on Highlightr for the `==highlight==` syntax. Install it from the Community Plugins marketplace before using Highlight Extractor.
+Obsidian doesn't support `==highlight==` syntax natively. You need one of:
+
+- [Highlightr](https://github.com/nickmackenzie/obsidian-highlightr) - popular highlight plugin
+- Or any other plugin that adds `==text==` syntax support
 
 ## Keyboard Shortcut
 
