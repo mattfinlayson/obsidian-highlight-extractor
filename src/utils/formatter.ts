@@ -53,16 +53,11 @@ function formatHighlightWithComments(highlight: Highlight, tagMapping: Record<st
     
     // Associated comments
     const regularComments = highlight.comments.filter(c => !c.isColorDefinition && !c.colorTag);
-    const tags = formatTags(highlight, tagMapping);
     
-    if (regularComments.length > 0 || tags.length > 0) {
+    if (regularComments.length > 0) {
         lines.push('');
         for (const comment of regularComments) {
             lines.push(`> _"${comment.text}"_`);
-        }
-        
-        if (tags.length > 0) {
-            lines.push(`> Tags: ${tags.join(', ')}`);
         }
     }
     
