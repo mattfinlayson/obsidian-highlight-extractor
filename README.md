@@ -1,83 +1,116 @@
 # Obsidian Highlight Extractor
 
-Extract highlights and comments from your Obsidian documents and format them for LLM consumption.
+A plugin that collects all your highlighted text and comments from a document and places them at the top in a format ready for use with language models (ChatGPT, Claude, etc.).
 
-> **⚠️ Important**: Requires the [Highlightr](https://github.com/nickmackenzie/obsidian-highlightr) plugin for `==highlight==` syntax support.
+## What It Does
 
-## Features
+When you're reading articles or documents in Obsidian, you probably highlight key passages using the `==highlight syntax==`. This plugin extracts all those highlights—along with any comments you've added—and formats them neatly at the top of your document.
 
-- **One-Key Extraction**: Press `Cmd+Alt+E` to extract all highlights
-- **LLM-Optimized Output**: Markdown format with provenance markers
-- **Non-Destructive**: Original content is never modified
-- **Comment Association**: Comments are attached to their nearest highlight
-- **Smart Deduplication**: Duplicate highlights are automatically removed
+This makes it easy to:
+
+- **Feed highlights to an LLM** for summary, analysis, or content generation
+- **Create LinkedIn posts or blog threads** from your reading highlights
+- **Review all key points** from a long document in one place
+- **Build a second brain** by extracting insights for later reference
+
+## How It Works
+
+### Before (your document with highlights)
+
+```markdown
+# Article Title
+
+This is some text with ==an important highlight== that I want to remember.
+
+<!-- A note about this highlight -->
+
+More content here with ==another highlight==.
+```
+
+### After (press `Cmd+Alt+E`)
+
+```markdown
+# Article Title
+
+<!-- highlights -->
+## Highlights (2)
+
+**Source**: [[article-title]] | Extracted: 2026-04-27T18:00:00Z
+
+### Highlights
+
+> **an important highlight that I want to remember**
+> Location: # Article Title
+> Comment: A note about this highlight
+
+> **another highlight**
+> Location: # Article Title
+
+<!-- /highlights -->
+
+This is some text with ==an important highlight==...
+```
+
+The extracted section is clearly marked with `<!-- highlights -->` markers, so you can remove it or re-extract later.
 
 ## Installation
 
-### Community Plugin Marketplace (Recommended)
+### Option 1: Community Plugins (Recommended)
 
-1. Open Obsidian Settings → Community Plugins
+1. Open Obsidian → Settings → Community Plugins
 2. Search for "Highlight Extractor"
 3. Install and enable
 
-### Manual Installation
+### Option 2: Manual Installation
 
 1. Download the latest release from GitHub
-2. Copy `main.js`, `manifest.json`, and `styles.css` to:
-   - `.obsidian/plugins/highlight-extractor/` in your vault
+2. Extract and copy `main.js`, `manifest.json`, `styles.css` to:
+   `.obsidian/plugins/highlight-extractor/`
 3. Enable in Community Plugins settings
 
 ## Usage
 
-### Document Format
+1. **Add highlights** to your document using `==text==` syntax
+2. **Add comments** using `<!-- comment -->` right after a highlight
+3. **Press `Cmd+Alt+E`** (or search "Extract Highlights" in the command palette)
+4. **Use the output** - copy the highlighted section and paste it into your favorite LLM
 
-Add highlights with `==` syntax and comments with HTML comments:
-
-```markdown
-==This is an important passage== <!-- This is my note about this passage -->
-
-==Another highlight==
-```
-
-### Extracting Highlights
-
-1. Open a document with highlights
-2. Press `Cmd+Alt+E` (or search "Extract Highlights" in Command Palette)
-3. Highlights are inserted at the document top in LLM-ready format:
+### Syntax Examples
 
 ```markdown
-<!-- highlights -->
-## Highlights (2)
+==This is a highlight== <!-- This is a comment -->
 
-**Source**: [[document-name]] | Extracted: 2026-04-27T18:00:00Z
+==Another important passage==
 
-### Highlights
-
-> **Highlight text here**
-> Location: Section Title
-> Comment: My note about this highlight
-
----
-
-<!-- /highlights -->
+==Third highlight== <!-- @tag This has a color tag -->
 ```
 
-## How It Works
+## Dependencies
 
-1. **Extract**: Press the hotkey
-2. **Review**: Edit the generated section as needed
-3. **Use**: Copy highlights to your LLM for content creation
+**Required**: [Highlightr](https://github.com/nickmackenzie/obsidian-highlightr)
+
+This plugin relies on Highlightr for the `==highlight==` syntax. Install it from the Community Plugins marketplace before using Highlight Extractor.
 
 ## Keyboard Shortcut
 
 Default: `Cmd+Alt+E`
 
-Customize in Settings → Hotkeys → "Highlight Extractor: Extract Highlights"
+Change it in Settings → Hotkeys → "Highlight Extractor: Extract Highlights"
 
 ## Settings
 
-- **Include Timestamp**: Add extraction time to output (default: on)
-- **Deduplicate Highlights**: Remove duplicate highlights (default: on)
+- **Include Timestamp**: Adds extraction date to the output (default: on)
+- **Deduplicate Highlights**: Removes duplicate highlights (default: on)
+
+## Why This Plugin?
+
+If you read articles in Obsidian (via Web Clipper or otherwise) and want to:
+
+- Create content from your highlights
+- Summarize what you read with an LLM
+- Build a collection of key insights
+
+...then manually copying highlights is tedious. This plugin does it instantly with one keypress.
 
 ## License
 
