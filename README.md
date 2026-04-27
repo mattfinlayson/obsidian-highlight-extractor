@@ -89,9 +89,10 @@ The extracted section is clearly marked with `<!-- highlights -->` markers, so y
 
 **Requires a plugin that enables `==highlight==` syntax**
 
-Obsidian doesn't support `==highlight==` syntax natively. You need one of:
+Obsidian doesn't support `==highlight==` syntax natively. You need a plugin like:
 
-- [Highlightr](https://github.com/nickmackenzie/obsidian-highlightr) - popular highlight plugin
+- [Note Annotations](https://github.com/jancbeck/obsidian-note-annotations) - by jancbeck (tested with this plugin)
+- [Highlightr](https://github.com/nickmackenzie/obsidian-highlightr) - popular alternative
 - Or any other plugin that adds `==text==` syntax support
 
 ## Keyboard Shortcut
