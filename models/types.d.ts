@@ -6,6 +6,7 @@ export interface Highlight {
     startIndex: number;
     endIndex: number;
     headingContext: string;
+    comments: Comment[];
 }
 export interface Comment {
     text: string;

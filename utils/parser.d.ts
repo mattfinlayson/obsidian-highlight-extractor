@@ -15,7 +15,7 @@ export declare function parseComments(content: string): Comment[];
  */
 export declare function findHeadingContext(content: string, position: number): string;
 /**
- * Parse both highlights and comments, filling heading contexts
+ * Parse both highlights and comments, filling heading contexts and associating comments
  */
 export declare function parseDocument(content: string): ParsedDocument;
 /**

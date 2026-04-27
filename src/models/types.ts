@@ -8,6 +8,7 @@ export interface Highlight {
   startIndex: number;    // Character position in original document
   endIndex: number;      // End character position
   headingContext: string; // Nearest heading above for provenance
+  comments: Comment[];   // Comments associated with this highlight
 }
 
 // Comment entity - HTML comments including color tags
