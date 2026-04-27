@@ -3,7 +3,14 @@
   "name": "Highlight Extractor",
   "version": "1.0.0",
   "minAppVersion": "1.0.0",
-  "description": "Extract highlights and comments from documents and format them for LLM consumption",
+  "description": "Extract highlights and comments from documents and format them for LLM consumption. Perfect for creating LinkedIn posts, blog content, and building a knowledge base from reading highlights.",
   "author": "Matthew Finlayson",
-  "license": "MIT"
+  "authorUrl": "https://github.com/mattfinlayson",
+  "license": "MIT",
+  "homepageUrl": "https://github.com/mattfinlayson/obsidian-highlight-extractor",
+  "issueUrl": "https://github.com/mattfinlayson/obsidian-highlight-extractor/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mattfinlayson/obsidian-highlight-extractor"
+  }
 }
