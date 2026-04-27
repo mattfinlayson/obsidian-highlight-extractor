@@ -76,7 +76,7 @@ export function findHeadingContext(content: string, position: number): string {
 
 /**
  * Associate comments with the nearest preceding highlight
- * Comments within 200 characters after a highlight are considered associated with it
+ * Comments within 2000 characters after a highlight are considered associated with it
  */
 function associateCommentsWithHighlights(highlights: Highlight[], comments: Comment[]): void {
     for (const comment of comments) {
@@ -102,8 +102,8 @@ function associateCommentsWithHighlights(highlights: Highlight[], comments: Comm
                 }
             }
 
-            // Only associate if comment is close to the highlight (within 200 chars)
-            if (nearestHighlight && nearestDistance < 200) {
+            // Only associate if comment is close to the highlight (within 2000 chars)
+            if (nearestHighlight && nearestDistance < 2000) {
                 nearestHighlight.comments.push(comment);
             }
         }
