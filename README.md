@@ -6,7 +6,7 @@ Extract highlights and comments from your Obsidian documents and format them for
 
 ## Features
 
-- **One-Key Extraction**: Press `Cmd+Alt+H` to extract all highlights
+- **One-Key Extraction**: Press `Cmd+Alt+E` to extract all highlights
 - **LLM-Optimized Output**: Markdown format with provenance markers
 - **Non-Destructive**: Original content is never modified
 - **Comment Association**: Comments are attached to their nearest highlight
@@ -42,7 +42,7 @@ Add highlights with `==` syntax and comments with HTML comments:
 ### Extracting Highlights
 
 1. Open a document with highlights
-2. Press `Cmd+Alt+H` (or search "Extract Highlights" in Command Palette)
+2. Press `Cmd+Alt+E` (or search "Extract Highlights" in Command Palette)
 3. Highlights are inserted at the document top in LLM-ready format:
 
 ```markdown
@@ -70,7 +70,7 @@ Add highlights with `==` syntax and comments with HTML comments:
 
 ## Keyboard Shortcut
 
-Default: `Cmd+Alt+H`
+Default: `Cmd+Alt+E`
 
 Customize in Settings → Hotkeys → "Highlight Extractor: Extract Highlights"
 

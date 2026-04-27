@@ -24,7 +24,7 @@ export default class HighlightExtractorPlugin extends Plugin {
             hotkeys: [
                 {
                     modifiers: ['Mod', 'Alt'],
-                    key: 'H'
+                    key: 'E'
                 }
             ],
             callback: async () => {

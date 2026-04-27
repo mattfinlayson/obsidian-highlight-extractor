@@ -54,7 +54,7 @@ export interface PluginSettings {
 
 // Default settings
 export const DEFAULT_SETTINGS: PluginSettings = {
-  defaultHotkey: 'Mod+Alt+H',
+  defaultHotkey: 'Mod+Alt+E',
   delimiterStyle: 'html-comment',
   includeTimestamp: true,
   deduplicateHighlights: true,
