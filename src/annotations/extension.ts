@@ -1,26 +1,26 @@
 import {
-  EditorState,
-  Range,
+  type EditorState,
+  type Extension,
+  type Range,
   StateEffect,
   StateField,
-  Text,
-  Extension
+  type Text,
 } from '@codemirror/state';
 import {
   Decoration,
-  DecorationSet,
+  type DecorationSet,
   EditorView,
   ViewPlugin,
-  ViewUpdate,
-  WidgetType
+  type ViewUpdate,
+  WidgetType,
 } from '@codemirror/view';
 import { Notice } from 'obsidian';
 import {
-  MARKER_END,
-  MARKER_START,
   extractAnnotationColor,
   generateAnnotationId,
-  stripAnnotationColor
+  MARKER_END,
+  MARKER_START,
+  stripAnnotationColor,
 } from './utils';
 
 const showPopoverEffect = StateEffect.define<{ from: number; to: number }>();
@@ -55,7 +55,7 @@ class HighlightWidget extends WidgetType {
     private readonly colorOptions: string[],
     private readonly createFileFromHighlight: (text: string) => Promise<void>,
     private readonly isMultiline = false,
-    private readonly annotationId?: string
+    private readonly annotationId?: string,
   ) {
     super();
   }
@@ -156,7 +156,7 @@ class HighlightWidget extends WidgetType {
 
     const textarea = popover.createEl('textarea', {
       cls: 'reading-assistant-popover-comment',
-      text: initialComment
+      text: initialComment,
     }) as HTMLTextAreaElement;
     textarea.rows = 5;
     textarea.placeholder = 'Add a comment';
@@ -176,9 +176,13 @@ class HighlightWidget extends WidgetType {
     return { container: popover, textarea };
   }
 
-  private addColorButton(parent: HTMLElement, textarea: HTMLTextAreaElement, color: string | null): void {
+  private addColorButton(
+    parent: HTMLElement,
+    textarea: HTMLTextAreaElement,
+    color: string | null,
+  ): void {
     const button = parent.createEl('button', {
-      cls: 'reading-assistant-color-button'
+      cls: 'reading-assistant-color-button',
     });
     button.setAttribute('type', 'button');
     button.setAttribute('aria-label', color ? `Save with ${color}` : 'Save without color');
@@ -231,7 +235,7 @@ class HighlightWidget extends WidgetType {
     }
 
     if (this.isMultiline && this.annotationId) {
-      const { startIdx, endIdx, endMarker, removeEnd } = this.findMultilineRange();
+      const { startIdx, endIdx, removeEnd } = this.findMultilineRange();
       if (startIdx === -1 || endIdx === -1) {
         return;
       }
@@ -245,8 +249,8 @@ class HighlightWidget extends WidgetType {
         changes: {
           from: startIdx,
           to: removeEnd,
-          insert: cleanContent.endsWith('\n') ? cleanContent.slice(0, -1) : cleanContent
-        }
+          insert: cleanContent.endsWith('\n') ? cleanContent.slice(0, -1) : cleanContent,
+        },
       });
       return;
     }
@@ -255,8 +259,8 @@ class HighlightWidget extends WidgetType {
       changes: {
         from: this.from,
         to: this.to,
-        insert: this.highlightText
-      }
+        insert: this.highlightText,
+      },
     });
   }
 
@@ -281,8 +285,8 @@ class HighlightWidget extends WidgetType {
         changes: {
           from: startIdx,
           to: removeEnd,
-          insert: newText
-        }
+          insert: newText,
+        },
       });
       return;
     }
@@ -295,8 +299,8 @@ class HighlightWidget extends WidgetType {
       changes: {
         from: this.from,
         to: this.to,
-        insert: newText
-      }
+        insert: newText,
+      },
     });
   }
 
@@ -339,11 +343,13 @@ function findHighlightsAndComments(doc: Text, colorOptions: string[]): Highlight
   const docText = doc.toString();
   const multilineStartRegex = new RegExp(
     `${MARKER_START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^%]+)%%`,
-    'g'
+    'g',
   );
-  let match: RegExpExecArray | null;
-
-  while ((match = multilineStartRegex.exec(docText)) !== null) {
+  for (
+    let match = multilineStartRegex.exec(docText);
+    match !== null;
+    match = multilineStartRegex.exec(docText)
+  ) {
     const id = match[1].trim();
     const afterStart = match.index + match[0].length;
     const endMarker = `${MARKER_END}${id}%%`;
@@ -369,12 +375,16 @@ function findHighlightsAndComments(doc: Text, colorOptions: string[]): Highlight
       hasComment,
       comment,
       isMultiline: true,
-      annotationId: id
+      annotationId: id,
     });
   }
 
   const annotatedRegex = /==([^=]+)==<!--([\s\S]*?)-->/gm;
-  while ((match = annotatedRegex.exec(docText)) !== null) {
+  for (
+    let match = annotatedRegex.exec(docText);
+    match !== null;
+    match = annotatedRegex.exec(docText)
+  ) {
     const matchStart = match.index;
     if (matches.some((existing) => matchStart >= existing.from && matchStart < existing.to)) {
       continue;
@@ -387,12 +397,16 @@ function findHighlightsAndComments(doc: Text, colorOptions: string[]): Highlight
       highlightText: match[1],
       hasColor: extractAnnotationColor(comment, colorOptions) !== null,
       hasComment: stripAnnotationColor(comment, colorOptions) !== '',
-      comment
+      comment,
     });
   }
 
   const highlightRegex = /==(?!<!--)([^=]+)==(?!<!--)/gm;
-  while ((match = highlightRegex.exec(docText)) !== null) {
+  for (
+    let match = highlightRegex.exec(docText);
+    match !== null;
+    match = highlightRegex.exec(docText)
+  ) {
     const matchStart = match.index;
     if (matches.some((existing) => matchStart >= existing.from && matchStart < existing.to)) {
       continue;
@@ -403,7 +417,7 @@ function findHighlightsAndComments(doc: Text, colorOptions: string[]): Highlight
       to: matchStart + match[0].length,
       highlightText: match[1],
       hasComment: false,
-      hasColor: false
+      hasColor: false,
     });
   }
 
@@ -413,7 +427,7 @@ function findHighlightsAndComments(doc: Text, colorOptions: string[]): Highlight
 function createHighlightDecorations(
   state: EditorState,
   colorOptions: string[],
-  createFileFromHighlight: (text: string) => Promise<void>
+  createFileFromHighlight: (text: string) => Promise<void>,
 ): DecorationSet {
   const decorations: Range<Decoration>[] = [];
 
@@ -430,9 +444,9 @@ function createHighlightDecorations(
           colorOptions,
           createFileFromHighlight,
           match.isMultiline ?? false,
-          match.annotationId
-        )
-      }).range(match.from, match.to)
+          match.annotationId,
+        ),
+      }).range(match.from, match.to),
     );
   }
 
@@ -441,7 +455,7 @@ function createHighlightDecorations(
 
 export function highlightExtension(
   colorOptions: string[],
-  createFileFromHighlight: (text: string) => Promise<void>
+  createFileFromHighlight: (text: string) => Promise<void>,
 ): Extension {
   const highlightField = StateField.define<DecorationSet>({
     create(state) {
@@ -454,7 +468,7 @@ export function highlightExtension(
 
       return decorations.map(transaction.changes);
     },
-    provide: (field) => EditorView.decorations.from(field)
+    provide: (field) => EditorView.decorations.from(field),
   });
 
   const highlightPlugin = ViewPlugin.fromClass(
@@ -474,13 +488,13 @@ export function highlightExtension(
 
               update.view.dom.ownerDocument.defaultView?.setTimeout(
                 () => decoration.spec.widget.showPopover(),
-                0
+                0,
               );
             });
           }
         }
       }
-    }
+    },
   );
 
   return [highlightField, highlightPlugin];
@@ -500,14 +514,14 @@ export function createHighlight(editorView: unknown): boolean {
     changes: {
       from: selection.from,
       to: selection.to,
-      insert: highlightText
+      insert: highlightText,
     },
     effects: [
       showPopoverEffect.of({
         from: selection.from,
-        to: selection.from + highlightText.length
-      })
-    ]
+        to: selection.from + highlightText.length,
+      }),
+    ],
   });
 
   return true;
@@ -528,14 +542,14 @@ export function createMultilineHighlight(editorView: unknown): boolean {
     changes: {
       from: selection.from,
       to: selection.to,
-      insert: wrappedText
+      insert: wrappedText,
     },
     effects: [
       showPopoverEffect.of({
         from: selection.from,
-        to: selection.from + wrappedText.length
-      })
-    ]
+        to: selection.from + wrappedText.length,
+      }),
+    ],
   });
 
   return true;

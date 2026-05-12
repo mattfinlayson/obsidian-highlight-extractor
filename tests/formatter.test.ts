@@ -2,13 +2,12 @@
  * Formatter unit tests
  */
 
+import type { Comment, Highlight } from '../src/models/types';
 import {
+  DEFAULT_FORMATTER_OPTIONS,
   formatExtraction,
   mapColorTagToObsidianTag,
-  deduplicateHighlights,
-  DEFAULT_FORMATTER_OPTIONS
 } from '../src/utils/formatter';
-import { Highlight, Comment } from '../src/models/types';
 
 describe('Formatter', () => {
   describe('mapColorTagToObsidianTag', () => {
@@ -28,14 +27,14 @@ describe('Formatter', () => {
       text: 'This is a key insight',
       startIndex: 0,
       endIndex: 20,
-      headingContext: '# Introduction'
+      headingContext: '# Introduction',
     };
 
     const sampleComment: Comment = {
       text: 'Important note',
       colorTag: null,
       startIndex: 25,
-      isColorDefinition: false
+      isColorDefinition: false,
     };
 
     it('should include delimiter start', () => {
@@ -43,9 +42,9 @@ describe('Formatter', () => {
         [sampleHighlight],
         [sampleComment],
         DEFAULT_FORMATTER_OPTIONS,
-        'test.md'
+        'test.md',
       );
-      
+
       expect(result).toContain('<!-- highlights -->');
     });
 
@@ -54,20 +53,15 @@ describe('Formatter', () => {
         [sampleHighlight],
         [sampleComment],
         DEFAULT_FORMATTER_OPTIONS,
-        'test.md'
+        'test.md',
       );
-      
+
       expect(result).toContain('<!-- /highlights -->');
     });
 
     it('should include highlight count', () => {
-      const result = formatExtraction(
-        [sampleHighlight],
-        [],
-        DEFAULT_FORMATTER_OPTIONS,
-        'test.md'
-      );
-      
+      const result = formatExtraction([sampleHighlight], [], DEFAULT_FORMATTER_OPTIONS, 'test.md');
+
       expect(result).toContain('## Highlights (1)');
     });
 
@@ -76,20 +70,15 @@ describe('Formatter', () => {
         [sampleHighlight],
         [],
         DEFAULT_FORMATTER_OPTIONS,
-        'test-article.md'
+        'test-article.md',
       );
-      
+
       expect(result).toContain('[[test-article.md]]');
     });
 
     it('should include heading context', () => {
-      const result = formatExtraction(
-        [sampleHighlight],
-        [],
-        DEFAULT_FORMATTER_OPTIONS,
-        'test.md'
-      );
-      
+      const result = formatExtraction([sampleHighlight], [], DEFAULT_FORMATTER_OPTIONS, 'test.md');
+
       expect(result).toContain('Location: Introduction');
     });
 
@@ -98,9 +87,9 @@ describe('Formatter', () => {
         [sampleHighlight],
         [],
         { ...DEFAULT_FORMATTER_OPTIONS, includeTimestamp: true },
-        'test.md'
+        'test.md',
       );
-      
+
       expect(result).toContain('Extracted:');
     });
 
@@ -109,16 +98,16 @@ describe('Formatter', () => {
         text: '@lightpink',
         colorTag: 'lightpink',
         startIndex: 0,
-        isColorDefinition: true
+        isColorDefinition: true,
       };
-      
+
       const result = formatExtraction(
         [{ ...sampleHighlight, comments: [colorComment] }],
         [],
         DEFAULT_FORMATTER_OPTIONS,
-        'test.md'
+        'test.md',
       );
-      
+
       expect(result).toContain('#highlight/lightpink');
     });
 
@@ -133,17 +122,12 @@ describe('Formatter', () => {
             text: 'Follow up on this @blue',
             colorTag: 'blue',
             startIndex: 12,
-            isColorDefinition: false
-          }
-        ]
+            isColorDefinition: false,
+          },
+        ],
       };
 
-      const result = formatExtraction(
-        [highlight],
-        [],
-        DEFAULT_FORMATTER_OPTIONS,
-        'test.md'
-      );
+      const result = formatExtraction([highlight], [], DEFAULT_FORMATTER_OPTIONS, 'test.md');
 
       expect(result).toContain('> Comment: Follow up on this');
       expect(result).not.toContain('@blue');
@@ -155,12 +139,12 @@ describe('Formatter', () => {
       const highlights: Highlight[] = [
         { text: 'Same', startIndex: 0, endIndex: 4, headingContext: '' },
         { text: 'Different', startIndex: 10, endIndex: 18, headingContext: '' },
-        { text: 'Same', startIndex: 20, endIndex: 24, headingContext: '' }
+        { text: 'Same', startIndex: 20, endIndex: 24, headingContext: '' },
       ];
-      
+
       const options = { ...DEFAULT_FORMATTER_OPTIONS, deduplicate: true };
       const result = formatExtraction(highlights, [], options, 'test.md');
-      
+
       expect(result).toContain('## Highlights (2)');
     });
 
@@ -171,11 +155,11 @@ describe('Formatter', () => {
         { text: 'First', startIndex: 0, endIndex: 5, headingContext: '' },
         { text: 'Duplicate of third', startIndex: 10, endIndex: 26, headingContext: '' },
         { text: 'Duplicate of third', startIndex: 30, endIndex: 46, headingContext: '' },
-        { text: 'Third', startIndex: 50, endIndex: 55, headingContext: '' }
+        { text: 'Third', startIndex: 50, endIndex: 55, headingContext: '' },
       ];
-      
+
       const result = formatExtraction(highlights, [], options, 'test.md');
-      
+
       // Should have first, "Duplicate of third" (first occurrence), third
       expect(result).toContain('## Highlights (3)');
     });

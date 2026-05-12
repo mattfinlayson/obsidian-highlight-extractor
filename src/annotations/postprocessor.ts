@@ -1,5 +1,5 @@
-import { MarkdownPostProcessorContext, MarkdownRenderChild } from 'obsidian';
-import { MARKER_END, MARKER_START, extractAnnotationColor, stripAnnotationColor } from './utils';
+import { type MarkdownPostProcessorContext, MarkdownRenderChild } from 'obsidian';
+import { extractAnnotationColor, MARKER_END, MARKER_START, stripAnnotationColor } from './utils';
 
 interface HighlightMatch {
   highlightText: string;
@@ -14,14 +14,16 @@ class MarginComment extends MarkdownRenderChild {
     private readonly comment: string,
     private readonly mark: HTMLElement,
     private readonly position: 'left' | 'right',
-    private readonly color: string | null
+    private readonly color: string | null,
   ) {
     super(containerEl);
     this.noteEl = containerEl.createDiv({ cls: 'reading-assistant-margin-comment' });
   }
 
   onload(): void {
-    this.noteEl.setText(this.comment.length > 200 ? `${this.comment.substring(0, 200)}...` : this.comment);
+    this.noteEl.setText(
+      this.comment.length > 200 ? `${this.comment.substring(0, 200)}...` : this.comment,
+    );
     this.noteEl.addClass(this.position === 'left' ? 'is-left' : 'is-right');
 
     if (this.color) {
@@ -48,7 +50,7 @@ class MarginComment extends MarkdownRenderChild {
 export function annotationPostprocessor(
   colorOptions: string[],
   element: HTMLElement,
-  { getSectionInfo, addChild }: MarkdownPostProcessorContext
+  { getSectionInfo, addChild }: MarkdownPostProcessorContext,
 ): void {
   const marks = element.findAll('mark');
   if (!marks.length) {
@@ -85,15 +87,7 @@ export function annotationPostprocessor(
     mark.addClass('has-comment');
     mark.setAttribute('title', cleanComment);
     element.addClass('reading-assistant-section');
-    addChild(
-      new MarginComment(
-        element,
-        cleanComment,
-        mark,
-        counter % 2 ? 'left' : 'right',
-        color
-      )
-    );
+    addChild(new MarginComment(element, cleanComment, mark, counter % 2 ? 'left' : 'right', color));
     counter++;
   }
 }
@@ -102,11 +96,13 @@ function findAnnotatedHighlights(content: string): HighlightMatch[] {
   const matches: HighlightMatch[] = [];
   const multilineStartRegex = new RegExp(
     `${MARKER_START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^%]+)%%`,
-    'g'
+    'g',
   );
-  let match;
-
-  while ((match = multilineStartRegex.exec(content)) !== null) {
+  for (
+    let match = multilineStartRegex.exec(content);
+    match !== null;
+    match = multilineStartRegex.exec(content)
+  ) {
     const id = match[1].trim();
     const afterStart = match.index + match[0].length;
     const endMarker = `${MARKER_END}${id}%%`;
@@ -121,15 +117,19 @@ function findAnnotatedHighlights(content: string): HighlightMatch[] {
 
     matches.push({
       highlightText: content.substring(afterStart, endIdx).replace(/^\n/, '').replace(/\n$/, ''),
-      comment: commentMatch ? commentMatch[1] : ''
+      comment: commentMatch ? commentMatch[1] : '',
     });
   }
 
   const annotatedRegex = /==([^=]+)==<!--([\s\S]*?)-->/g;
-  while ((match = annotatedRegex.exec(content)) !== null) {
+  for (
+    let match = annotatedRegex.exec(content);
+    match !== null;
+    match = annotatedRegex.exec(content)
+  ) {
     matches.push({
       highlightText: match[1],
-      comment: match[2]
+      comment: match[2],
     });
   }
 

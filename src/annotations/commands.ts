@@ -1,6 +1,6 @@
-import { Editor, Notice } from 'obsidian';
+import { type Editor, Notice } from 'obsidian';
 import { createHighlight, createMultilineHighlight } from './extension';
-import { MARKER_END, MARKER_START, escapeRegExp } from './utils';
+import { escapeRegExp, MARKER_END, MARKER_START } from './utils';
 
 interface EditorPosition {
   line: number;
@@ -99,7 +99,7 @@ export function deleteAnnotationCommand(editor: Editor): boolean {
   const contentStartCh = startCh + `${MARKER_START}${startId}%%`.length;
   const content = annotationEditor.getRange(
     { line: startLine, ch: contentStartCh },
-    { line: endLine, ch: endMarkerCh }
+    { line: endLine, ch: endMarkerCh },
   );
   const cleanContent = content.startsWith('\n') ? content.substring(1) : content;
 
@@ -110,7 +110,7 @@ export function deleteAnnotationCommand(editor: Editor): boolean {
   annotationEditor.replaceRange(
     cleanContent,
     { line: startLine, ch: startCh },
-    { line: endLine, ch: deleteEndCh }
+    { line: endLine, ch: deleteEndCh },
   );
 
   new Notice('Annotation removed');
@@ -122,14 +122,8 @@ export function clearAllAnnotationsCommand(editor: Editor): boolean {
   let cleaned = annotationEditor.getValue();
 
   cleaned = cleaned.replace(/(%%highlight-end:[^%]+%%)<!--[\s\S]*?-->/g, '$1');
-  cleaned = cleaned.replace(
-    new RegExp(`${escapeRegExp(MARKER_START)}([^%]+)%%\\n?`, 'g'),
-    ''
-  );
-  cleaned = cleaned.replace(
-    new RegExp(`\\n?${escapeRegExp(MARKER_END)}([^%]+)%%`, 'g'),
-    ''
-  );
+  cleaned = cleaned.replace(new RegExp(`${escapeRegExp(MARKER_START)}([^%]+)%%\\n?`, 'g'), '');
+  cleaned = cleaned.replace(new RegExp(`\\n?${escapeRegExp(MARKER_END)}([^%]+)%%`, 'g'), '');
   cleaned = cleaned.replace(/==([\s\S]*?)==<!--[\s\S]*?-->/g, '$1');
   cleaned = cleaned.replace(/==([\s\S]*?)==/g, '$1');
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
@@ -165,7 +159,7 @@ function deleteSingleLineHighlightAtCursor(editor: AnnotationEditor): boolean {
   editor.replaceRange(
     highlighted,
     { line: cursor.line, ch: startIdx },
-    { line: cursor.line, ch: finalTo }
+    { line: cursor.line, ch: finalTo },
   );
 
   new Notice('Annotation removed');
@@ -188,11 +182,7 @@ function expandSelectionBoundary(editor: AnnotationEditor): string {
     start--;
   }
 
-  while (
-    end < lineTo.length &&
-    /\w/.test(lineTo[end]) &&
-    lineTo.substring(end, end + 2) !== '=='
-  ) {
+  while (end < lineTo.length && /\w/.test(lineTo[end]) && lineTo.substring(end, end + 2) !== '==') {
     end++;
   }
 

@@ -7,7 +7,7 @@ declare module 'obsidian' {
   export class Plugin {
     app: App;
     manifest: PluginManifest;
-    
+
     addCommand(command: Command): Command;
     addSettingTab(tab: SettingTab): void;
     addRibbon(icon: string, title: string, callback: () => void): void;
@@ -16,53 +16,53 @@ declare module 'obsidian' {
     registerDomEvent<K extends keyof DocumentEventMap>(
       el: Document,
       type: K,
-      callback: (event: DocumentEventMap[K]) => void
+      callback: (event: DocumentEventMap[K]) => void,
     ): void;
     registerDomEvent<K extends keyof HTMLElementEventMap>(
       el: HTMLElement,
       type: K,
-      callback: (event: HTMLElementEventMap[K]) => void
+      callback: (event: HTMLElementEventMap[K]) => void,
     ): void;
     registerEditorExtension(extension: unknown): void;
     registerMarkdownPostProcessor(processor: MarkdownPostProcessor): void;
-    
+
     loadData(): Promise<any>;
     saveData(data: any): Promise<void>;
-    
+
     onload(): void | Promise<void>;
     onunload(): void | Promise<void>;
   }
-  
+
   export interface Command {
     id: string;
     name: string;
     callback?: () => void | Promise<void>;
-    editorCallback?: (editor: Editor) => void | boolean | Promise<void | boolean>;
+    editorCallback?: (editor: Editor) => undefined | boolean | Promise<undefined | boolean>;
     hotkeys?: KeyboardShortcut[];
-    checkCallback?: (checking: boolean) => boolean | void;
+    checkCallback?: (checking: boolean) => boolean | undefined;
   }
-  
+
   export interface KeyboardShortcut {
     modifiers: string[];
     key: string;
   }
-  
+
   export class Notice {
     constructor(message: string, duration?: number);
   }
-  
+
   export interface App {
     vault: Vault;
     workspace: Workspace;
   }
-  
+
   export interface Vault {
     read(file: TFile): Promise<string>;
     modify(file: TFile, data: string): Promise<void>;
     process(file: TFile, callback: (data: string) => string | Promise<string>): Promise<void>;
     create(path: string, data: string): Promise<TFile>;
   }
-  
+
   export interface Workspace {
     containerEl: HTMLElement;
     getActiveFile(): TFile | null;
@@ -72,38 +72,38 @@ declare module 'obsidian' {
     } | null;
     activeLeaf: WorkspaceLeaf;
   }
-  
+
   export interface WorkspaceLeaf {
     view: View;
   }
-  
+
   export interface View {
     editor: Editor;
   }
-  
+
   export interface Editor {
     getValue(): string;
     getSelection(): string;
     blur(): void;
   }
-  
+
   export interface TFile {
     basename: string;
     path: string;
   }
-  
+
   export interface PluginManifest {
     id: string;
     name: string;
     version: string;
   }
-  
+
   export class SettingTab {
     containerEl: HTMLElement;
     constructor(app: App, plugin: Plugin);
     display(): void;
   }
-  
+
   export class Setting {
     constructor(containerEl: HTMLElement);
     setName(name: string): this;
@@ -112,12 +112,12 @@ declare module 'obsidian' {
     addText(callback: (component: TextComponent) => void): this;
     addTextArea(callback: (component: TextAreaComponent) => void): this;
   }
-  
+
   export class ToggleComponent {
     setValue(value: boolean): void;
     onChange(callback: (value: boolean) => void): void;
   }
-  
+
   export class TextComponent {
     setValue(value: string): void;
     onChange(callback: (value: string) => void): void;
@@ -130,7 +130,7 @@ declare module 'obsidian' {
 
   export type MarkdownPostProcessor = (
     element: HTMLElement,
-    context: MarkdownPostProcessorContext
+    context: MarkdownPostProcessorContext,
   ) => void | Promise<void>;
 
   export interface MarkdownPostProcessorContext {
@@ -146,10 +146,9 @@ declare module 'obsidian' {
     registerDomEvent<K extends keyof HTMLElementEventMap>(
       el: HTMLElement,
       type: K,
-      callback: (event: HTMLElementEventMap[K]) => void
+      callback: (event: HTMLElementEventMap[K]) => void,
     ): void;
   }
-  
 }
 
 interface DomCreateOptions {

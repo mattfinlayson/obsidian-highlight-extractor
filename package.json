@@ -7,9 +7,11 @@
     "dev": "npm run build && npm run bundle -- --watch",
     "build": "tsc",
     "bundle": "esbuild src/main.ts --bundle --format=cjs --outfile=main.js --external:obsidian --external:@codemirror/state --external:@codemirror/view --platform=browser",
+    "check": "biome check src tests README.md AGENTS.md styles.css package.json manifest.json tsconfig.json jest.config.js biome.json",
+    "format": "biome format --write src tests README.md AGENTS.md styles.css package.json manifest.json tsconfig.json jest.config.js biome.json",
     "test": "jest",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run typecheck && npm test && npm run build && npm run bundle"
+    "verify": "npm run typecheck && npm test && npm run check && npm run build && npm run bundle"
   },
   "keywords": [
     "obsidian",
@@ -20,6 +22,7 @@
   "author": "Matthew Finlayson",
   "license": "MIT",
   "devDependencies": {
+    "@biomejs/biome": "^2.4.15",
     "@codemirror/state": "^6.5.2",
     "@codemirror/view": "^6.38.8",
     "@types/jest": "^30.0.0",

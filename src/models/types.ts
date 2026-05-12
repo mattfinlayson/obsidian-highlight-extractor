@@ -4,18 +4,18 @@
 
 // Highlight entity - text marked with ==...==
 export interface Highlight {
-  text: string;          // Content between == delimiters
-  startIndex: number;    // Character position in original document
-  endIndex: number;      // End character position
+  text: string; // Content between == delimiters
+  startIndex: number; // Character position in original document
+  endIndex: number; // End character position
   headingContext: string; // Nearest heading above for provenance
-  comments?: Comment[];   // Comments associated with this highlight
+  comments?: Comment[]; // Comments associated with this highlight
 }
 
 // Comment entity - HTML comments including color tags
 export interface Comment {
-  text: string;              // Full comment content including color tag
-  colorTag: string | null;   // Color name if <!-- @colorname--> detected
-  startIndex: number;       // Character position in document
+  text: string; // Full comment content including color tag
+  colorTag: string | null; // Color name if <!-- @colorname--> detected
+  startIndex: number; // Character position in document
   isColorDefinition: boolean; // True if purely a color tag definition
 }
 
@@ -37,10 +37,10 @@ export interface ExtractionResult {
 
 // Extracted section for document insertion
 export interface ExtractedSection {
-  content: string;          // Formatted Markdown ready for insertion
-  delimiterStart: string;  // Opening marker
-  delimiterEnd: string;    // Closing marker
-  isUpdate: boolean;        // True if replacing existing section
+  content: string; // Formatted Markdown ready for insertion
+  delimiterStart: string; // Opening marker
+  delimiterEnd: string; // Closing marker
+  isUpdate: boolean; // True if replacing existing section
 }
 
 // Plugin settings
@@ -62,7 +62,7 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   deduplicateHighlights: true,
   tagColorMapping: {},
   expandAnnotationSelection: true,
-  annotationColors: ['lightpink', 'palegreen', 'paleturquoise', 'violet']
+  annotationColors: ['lightpink', 'palegreen', 'paleturquoise', 'violet'],
 };
 
 // Formatter options
