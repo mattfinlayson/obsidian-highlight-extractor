@@ -1,9 +1,10 @@
 /**
  * Highlight Extractor Settings Tab
  */
-import { App, Plugin, SettingTab } from 'obsidian';
+import { App, SettingTab } from 'obsidian';
+import type HighlightExtractorPlugin from './main';
 export default class HighlightExtractorSettingTab extends SettingTab {
-    plugin: Plugin;
-    constructor(app: App, plugin: Plugin);
+    plugin: HighlightExtractorPlugin;
+    constructor(app: App, plugin: HighlightExtractorPlugin);
     display(): void;
 }

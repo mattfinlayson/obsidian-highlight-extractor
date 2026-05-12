@@ -6,7 +6,7 @@ export interface Highlight {
     startIndex: number;
     endIndex: number;
     headingContext: string;
-    comments: Comment[];
+    comments?: Comment[];
 }
 export interface Comment {
     text: string;
@@ -38,6 +38,8 @@ export interface PluginSettings {
     includeTimestamp: boolean;
     deduplicateHighlights: boolean;
     tagColorMapping: Record<string, string>;
+    expandAnnotationSelection: boolean;
+    annotationColors: string[];
 }
 export declare const DEFAULT_SETTINGS: PluginSettings;
 export interface FormatterOptions {

@@ -1,10 +1,10 @@
 # Obsidian Highlight Extractor
 
-A plugin that collects all your highlighted text and comments from a document and places them at the top in a format ready for use with language models (ChatGPT, Claude, etc.).
+A plugin that lets you create annotated highlights in Obsidian, then collect those highlights and comments at the top of a document in a format ready for use with language models (ChatGPT, Claude, etc.).
 
 ## What It Does
 
-When you're reading articles or documents in Obsidian, you probably highlight key passages using the `==highlight syntax==`. This plugin extracts all those highlights—along with any comments you've added—and formats them neatly at the top of your document.
+When you're reading articles or documents in Obsidian, you can highlight key passages, add comments, use colors, and extract the results for later use. This plugin combines annotation tools from [obsidian-note-annotations](https://github.com/mattfinlayson/obsidian-note-annotations) with the highlight extraction workflow in this repository.
 
 This makes it easy to:
 
@@ -70,8 +70,8 @@ The extracted section is clearly marked with `<!-- highlights -->` markers, so y
 
 ## Usage
 
-1. **Add highlights** to your document using `==text==` syntax
-2. **Add comments** using `<!-- comment -->` right after a highlight
+1. **Add highlights** to your document using the command palette, highlight mode, or `==text==` syntax
+2. **Add comments and colors** by clicking highlighted text in live preview
 3. **Press `Cmd+Alt+E`** (or search "Extract Highlights" in the command palette)
 4. **Use the output** - copy the highlighted section and paste it into your favorite LLM
 
@@ -82,19 +82,25 @@ The extracted section is clearly marked with `<!-- highlights -->` markers, so y
 
 ==Another important passage==
 
-==Third highlight== <!-- @tag This has a color tag -->
+==Third highlight==<!-- This has a color tag @blue -->
+
+%%highlight-start:abc123%%
+Multi-line highlighted text
+%%highlight-end:abc123%%<!-- A multi-line annotation @lightpink -->
 ```
 
-## Dependencies
+## Annotation Commands
 
-**Requires a plugin that enables `==highlight==` syntax**
+- **Highlight selection**: wraps the current selection as an annotation
+- **Toggle highlight mode**: highlights selected text automatically in live preview
+- **Delete annotation at cursor**: removes annotation markup while preserving text
+- **Clear all annotations**: removes highlight/comment markup from the current document
+- **Extract highlights**: inserts or replaces the generated highlights section
 
-Obsidian doesn't support `==highlight==` syntax natively. You need a plugin like:
+## References
 
+- [obsidian-note-annotations](https://github.com/mattfinlayson/obsidian-note-annotations) - source plugin merged into this repository
 - [Obsidian Plugin Skill](https://github.com/gapmiss/obsidian-plugin-skill) - guidance and tooling for Obsidian plugin development
-- [Note Annotations](https://github.com/jancbeck/obsidian-note-annotations) - by jancbeck (tested with this plugin)
-- [Highlightr](https://github.com/nickmackenzie/obsidian-highlightr) - popular alternative
-- Or any other plugin that adds `==text==` syntax support
 
 ## Keyboard Shortcut
 
@@ -106,6 +112,8 @@ Change it in Settings → Hotkeys → "Highlight Extractor: Extract Highlights"
 
 - **Include Timestamp**: Adds extraction date to the output (default: on)
 - **Deduplicate Highlights**: Removes duplicate highlights (default: on)
+- **Expand Annotation Selection**: Expands selections to word boundaries when creating annotations (default: on)
+- **Annotation Colors**: Comma-separated color names available in the annotation popover
 
 ## Why This Plugin?
 

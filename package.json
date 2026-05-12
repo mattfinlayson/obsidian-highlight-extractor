@@ -1,13 +1,15 @@
 {
   "name": "obsidian-highlight-extractor",
   "version": "1.0.0",
-  "description": "Extract highlights and comments from Obsidian documents for LLM consumption",
+  "description": "Create, annotate, and extract highlights from Obsidian documents for LLM consumption",
   "main": "main.js",
   "scripts": {
     "dev": "npm run build && npm run bundle -- --watch",
     "build": "tsc",
-    "bundle": "esbuild src/main.ts --bundle --format=cjs --outfile=main.js --external:obsidian --platform=browser",
-    "test": "jest"
+    "bundle": "esbuild src/main.ts --bundle --format=cjs --outfile=main.js --external:obsidian --external:@codemirror/state --external:@codemirror/view --platform=browser",
+    "test": "jest",
+    "typecheck": "tsc --noEmit",
+    "verify": "npm run typecheck && npm test && npm run build && npm run bundle"
   },
   "keywords": [
     "obsidian",
@@ -18,8 +20,13 @@
   "author": "Matthew Finlayson",
   "license": "MIT",
   "devDependencies": {
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.38.8",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.0.0",
     "esbuild": "^0.28.0",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.9",
     "typescript": "^5.0.0"
   }
 }

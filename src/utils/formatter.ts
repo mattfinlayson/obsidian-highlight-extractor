@@ -28,7 +28,7 @@ export function mapColorTagToObsidianTag(colorName: string, tagMapping: Record<s
 function formatTags(highlight: Highlight, tagMapping: Record<string, string>): string[] {
     const tags: string[] = [];
     
-    for (const comment of highlight.comments) {
+    for (const comment of highlight.comments ?? []) {
         if (comment.colorTag) {
             tags.push(mapColorTagToObsidianTag(comment.colorTag, tagMapping));
         }
@@ -50,13 +50,23 @@ function formatHighlightWithComments(highlight: Highlight, tagMapping: Record<st
     if (highlight.headingContext) {
         lines.push(`> Location: ${highlight.headingContext.replace(/^#+\s*/, '')}`);
     }
+
+    const tags = formatTags(highlight, tagMapping);
+    if (tags.length > 0) {
+        lines.push(`> Tags: ${tags.join(' ')}`);
+    }
     
     // Associated comments
-    const regularComments = highlight.comments.filter(c => !c.isColorDefinition && !c.colorTag);
+    const regularComments = (highlight.comments ?? []).filter(c => !c.isColorDefinition);
     
     if (regularComments.length > 0) {
         for (const comment of regularComments) {
-            lines.push(`> Comment: ${comment.text}`);
+            const commentText = comment.colorTag
+                ? comment.text.replace(new RegExp(`\\s*@${comment.colorTag}\\s*$`), '').trim()
+                : comment.text;
+            if (commentText) {
+                lines.push(`> Comment: ${commentText}`);
+            }
         }
     }
     
@@ -66,7 +76,7 @@ function formatHighlightWithComments(highlight: Highlight, tagMapping: Record<st
 /**
  * Deduplicate highlights while preserving order
  */
-function deduplicateHighlights(highlights: Highlight[]): Highlight[] {
+export function deduplicateHighlights(highlights: Highlight[]): Highlight[] {
     const seen = new Set<string>();
     return highlights.filter(h => {
         if (seen.has(h.text)) return false;

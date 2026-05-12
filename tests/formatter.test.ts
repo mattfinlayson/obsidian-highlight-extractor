@@ -90,7 +90,7 @@ describe('Formatter', () => {
         'test.md'
       );
       
-      expect(result).toContain('Location: # Introduction');
+      expect(result).toContain('Location: Introduction');
     });
 
     it('should include timestamp when enabled', () => {
@@ -113,13 +113,40 @@ describe('Formatter', () => {
       };
       
       const result = formatExtraction(
+        [{ ...sampleHighlight, comments: [colorComment] }],
         [],
-        [colorComment],
         DEFAULT_FORMATTER_OPTIONS,
         'test.md'
       );
       
       expect(result).toContain('#highlight/lightpink');
+    });
+
+    it('should preserve comment text when it also contains a color tag', () => {
+      const highlight: Highlight = {
+        text: 'Marked text',
+        startIndex: 0,
+        endIndex: 11,
+        headingContext: '',
+        comments: [
+          {
+            text: 'Follow up on this @blue',
+            colorTag: 'blue',
+            startIndex: 12,
+            isColorDefinition: false
+          }
+        ]
+      };
+
+      const result = formatExtraction(
+        [highlight],
+        [],
+        DEFAULT_FORMATTER_OPTIONS,
+        'test.md'
+      );
+
+      expect(result).toContain('> Comment: Follow up on this');
+      expect(result).not.toContain('@blue');
     });
   });
 

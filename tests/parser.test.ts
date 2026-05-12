@@ -37,8 +37,16 @@ describe('Parser', () => {
       expect(highlights[0].text).toBe('This is a multiline\nhighlight section');
     });
 
+    it('should extract note annotation multiline highlights', () => {
+      const content = '%%highlight-start:abc123%%\nThis spans\nmultiple lines\n%%highlight-end:abc123%%';
+      const highlights = parseHighlights(content);
+
+      expect(highlights).toHaveLength(1);
+      expect(highlights[0].text).toBe('This spans\nmultiple lines');
+    });
+
     it('should skip empty highlights', () => {
-      const content = '==empty== and ==not empty==';
+      const content = '== == and ==not empty==';
       const highlights = parseHighlights(content);
       
       expect(highlights).toHaveLength(1);
@@ -57,7 +65,7 @@ describe('Parser', () => {
       const highlights = parseHighlights(content);
       
       expect(highlights[0].startIndex).toBe(7);
-      expect(highlights[0].endIndex).toBe(18);
+      expect(highlights[0].endIndex).toBe(20);
     });
   });
 
@@ -95,6 +103,15 @@ describe('Parser', () => {
       
       expect(comments).toHaveLength(1);
       expect(comments[0].colorTag).toBeNull();
+      expect(comments[0].isColorDefinition).toBe(false);
+    });
+
+    it('should extract note annotation color tags from comments', () => {
+      const content = '<!-- Note about this @blue -->';
+      const comments = parseComments(content);
+
+      expect(comments).toHaveLength(1);
+      expect(comments[0].colorTag).toBe('blue');
       expect(comments[0].isColorDefinition).toBe(false);
     });
 

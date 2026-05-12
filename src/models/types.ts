@@ -8,7 +8,7 @@ export interface Highlight {
   startIndex: number;    // Character position in original document
   endIndex: number;      // End character position
   headingContext: string; // Nearest heading above for provenance
-  comments: Comment[];   // Comments associated with this highlight
+  comments?: Comment[];   // Comments associated with this highlight
 }
 
 // Comment entity - HTML comments including color tags
@@ -50,6 +50,8 @@ export interface PluginSettings {
   includeTimestamp: boolean;
   deduplicateHighlights: boolean;
   tagColorMapping: Record<string, string>;
+  expandAnnotationSelection: boolean;
+  annotationColors: string[];
 }
 
 // Default settings
@@ -58,7 +60,9 @@ export const DEFAULT_SETTINGS: PluginSettings = {
   delimiterStyle: 'html-comment',
   includeTimestamp: true,
   deduplicateHighlights: true,
-  tagColorMapping: {}
+  tagColorMapping: {},
+  expandAnnotationSelection: true,
+  annotationColors: ['lightpink', 'palegreen', 'paleturquoise', 'violet']
 };
 
 // Formatter options

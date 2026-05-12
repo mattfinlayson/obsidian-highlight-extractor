@@ -11,6 +11,20 @@ declare module 'obsidian' {
     addCommand(command: Command): Command;
     addSettingTab(tab: SettingTab): void;
     addRibbon(icon: string, title: string, callback: () => void): void;
+    addRibbonIcon(icon: string, title: string, callback: () => void): HTMLElement;
+    addStatusBarItem(): HTMLElement;
+    registerDomEvent<K extends keyof DocumentEventMap>(
+      el: Document,
+      type: K,
+      callback: (event: DocumentEventMap[K]) => void
+    ): void;
+    registerDomEvent<K extends keyof HTMLElementEventMap>(
+      el: HTMLElement,
+      type: K,
+      callback: (event: HTMLElementEventMap[K]) => void
+    ): void;
+    registerEditorExtension(extension: unknown): void;
+    registerMarkdownPostProcessor(processor: MarkdownPostProcessor): void;
     
     loadData(): Promise<any>;
     saveData(data: any): Promise<void>;
@@ -23,6 +37,7 @@ declare module 'obsidian' {
     id: string;
     name: string;
     callback?: () => void | Promise<void>;
+    editorCallback?: (editor: Editor) => void | boolean | Promise<void | boolean>;
     hotkeys?: KeyboardShortcut[];
     checkCallback?: (checking: boolean) => boolean | void;
   }
@@ -45,10 +60,16 @@ declare module 'obsidian' {
     read(file: TFile): Promise<string>;
     modify(file: TFile, data: string): Promise<void>;
     process(file: TFile, callback: (data: string) => string | Promise<string>): Promise<void>;
+    create(path: string, data: string): Promise<TFile>;
   }
   
   export interface Workspace {
+    containerEl: HTMLElement;
     getActiveFile(): TFile | null;
+    openLinkText(linktext: string, sourcePath: string): Promise<void>;
+    activeEditor: {
+      editor?: Editor;
+    } | null;
     activeLeaf: WorkspaceLeaf;
   }
   
@@ -62,6 +83,8 @@ declare module 'obsidian' {
   
   export interface Editor {
     getValue(): string;
+    getSelection(): string;
+    blur(): void;
   }
   
   export interface TFile {
@@ -87,6 +110,7 @@ declare module 'obsidian' {
     setDesc(desc: string): this;
     addToggle(callback: (component: ToggleComponent) => void): this;
     addText(callback: (component: TextComponent) => void): this;
+    addTextArea(callback: (component: TextAreaComponent) => void): this;
   }
   
   export class ToggleComponent {
@@ -98,9 +122,47 @@ declare module 'obsidian' {
     setValue(value: string): void;
     onChange(callback: (value: string) => void): void;
   }
-  
-  export interface HTMLElement {
-    empty(): void;
-    createEl(tag: string, options?: any): HTMLElement;
+
+  export class TextAreaComponent {
+    setValue(value: string): void;
+    onChange(callback: (value: string) => void): void;
   }
+
+  export type MarkdownPostProcessor = (
+    element: HTMLElement,
+    context: MarkdownPostProcessorContext
+  ) => void | Promise<void>;
+
+  export interface MarkdownPostProcessorContext {
+    getSectionInfo(element: HTMLElement): { text: string } | null;
+    addChild(child: MarkdownRenderChild): void;
+  }
+
+  export class MarkdownRenderChild {
+    containerEl: HTMLElement;
+    constructor(containerEl: HTMLElement);
+    onload(): void;
+    onunload(): void;
+    registerDomEvent<K extends keyof HTMLElementEventMap>(
+      el: HTMLElement,
+      type: K,
+      callback: (event: HTMLElementEventMap[K]) => void
+    ): void;
+  }
+  
+}
+
+interface DomCreateOptions {
+  text?: string;
+  cls?: string;
+}
+
+interface HTMLElement {
+  addClass(className: string): void;
+  createDiv(options?: DomCreateOptions): HTMLElement;
+  createEl(tag: string, options?: DomCreateOptions): HTMLElement;
+  empty(): void;
+  findAll(selector: string): HTMLElement[];
+  removeClass(className: string): void;
+  setText(text: string): void;
 }

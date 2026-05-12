@@ -11,6 +11,10 @@ export declare const DEFAULT_FORMATTER_OPTIONS: FormatterOptions;
  */
 export declare function mapColorTagToObsidianTag(colorName: string, tagMapping: Record<string, string>): string;
 /**
+ * Deduplicate highlights while preserving order
+ */
+export declare function deduplicateHighlights(highlights: Highlight[]): Highlight[];
+/**
  * Format extraction result as LLM-optimized Markdown
  */
 export declare function formatExtraction(highlights: Highlight[], comments: Comment[], options: FormatterOptions, documentTitle: string): string;
