@@ -8,7 +8,7 @@ import {
   createHighlightCommand,
   deleteAnnotationCommand,
 } from './annotations/commands';
-import { highlightExtension } from './annotations/extension';
+import { cleanupPopovers, highlightExtension } from './annotations/extension';
 import { annotationPostprocessor } from './annotations/postprocessor';
 import { extractHighlights, insertExtraction } from './HighlightExtractor';
 import { DEFAULT_SETTINGS, type PluginSettings } from './models/types';
@@ -82,7 +82,9 @@ export default class ReadingAssistantPlugin extends Plugin {
     this.addSettingTab(this.settingsTab);
   }
 
-  async onunload() {}
+  async onunload() {
+    cleanupPopovers();
+  }
 
   async loadSettings() {
     try {
@@ -133,7 +135,7 @@ export default class ReadingAssistantPlugin extends Plugin {
   }
 
   lockEditorInHighlightingMode(event: MouseEvent | TouchEvent) {
-    if (!this.isHighlightingModeOn || !(event.target instanceof HTMLElement)) {
+    if (!this.isHighlightingModeOn || !isHtmlElement(event.target)) {
       return;
     }
 
@@ -154,18 +156,17 @@ export default class ReadingAssistantPlugin extends Plugin {
       return;
     }
 
-    const usesModifier =
-      event instanceof MouseEvent && (event.metaKey || event.altKey || event.ctrlKey);
+    const usesModifier = isMouseEvent(event) && (event.metaKey || event.altKey || event.ctrlKey);
     if (!usesModifier && !this.isHighlightingModeOn) {
       return;
     }
 
-    if (event.target instanceof HTMLElement && !event.target.closest('.is-live-preview')) {
+    if (isHtmlElement(event.target) && !event.target.closest('.is-live-preview')) {
       return;
     }
 
     const expandSelection =
-      this.settings.expandAnnotationSelection && !(event instanceof MouseEvent && event.altKey);
+      this.settings.expandAnnotationSelection && !(isMouseEvent(event) && event.altKey);
     createHighlightCommand(editor, expandSelection);
   }
 
@@ -208,4 +209,20 @@ export default class ReadingAssistantPlugin extends Plugin {
       new Notice('Failed to extract highlights. Check console for details.');
     }
   }
+}
+
+function isHtmlElement(target: EventTarget | null): target is HTMLElement {
+  if (!target || typeof target !== 'object' || !('ownerDocument' in target)) {
+    return false;
+  }
+
+  const ownerDocument = (target as { ownerDocument?: Document }).ownerDocument;
+  const htmlElement = ownerDocument?.defaultView?.HTMLElement;
+  return typeof htmlElement === 'function' && target instanceof htmlElement;
+}
+
+function isMouseEvent(event: Event): event is MouseEvent {
+  const view = (event as UIEvent).view as (Window & { MouseEvent?: typeof MouseEvent }) | null;
+  const mouseEvent = view?.MouseEvent;
+  return typeof mouseEvent === 'function' && event instanceof mouseEvent;
 }

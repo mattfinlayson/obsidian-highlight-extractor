@@ -163,6 +163,24 @@ describe('Parser', () => {
 
       expect(result.highlights[0].headingContext).toBe('# Section');
     });
+
+    it('should associate note annotation multiline comments and configured color tags', () => {
+      const content = [
+        '# Section',
+        '',
+        '%%highlight-start:abc123%%',
+        'Important passage',
+        '%%highlight-end:abc123%%<!-- Follow up @customcolor -->',
+      ].join('\n');
+      const result = parseDocument(content, ['customcolor']);
+
+      expect(result.highlights).toHaveLength(1);
+      expect(result.highlights[0].text).toBe('Important passage');
+      expect(result.highlights[0].headingContext).toBe('# Section');
+      expect(result.highlights[0].comments).toHaveLength(1);
+      expect(result.highlights[0].comments?.[0].text).toBe('Follow up @customcolor');
+      expect(result.highlights[0].comments?.[0].colorTag).toBe('customcolor');
+    });
   });
 
   describe('extractColorTag', () => {

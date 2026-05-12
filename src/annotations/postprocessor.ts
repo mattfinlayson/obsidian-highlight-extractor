@@ -4,6 +4,7 @@ import { extractAnnotationColor, MARKER_END, MARKER_START, stripAnnotationColor 
 interface HighlightMatch {
   highlightText: string;
   comment: string;
+  isMultiline: boolean;
 }
 
 class MarginComment extends MarkdownRenderChild {
@@ -52,17 +53,30 @@ export function annotationPostprocessor(
   element: HTMLElement,
   { getSectionInfo, addChild }: MarkdownPostProcessorContext,
 ): void {
-  const marks = element.findAll('mark');
-  if (!marks.length) {
-    return;
-  }
-
   const section = getSectionInfo(element);
   if (!section) {
     return;
   }
 
   const matches = findAnnotatedHighlights(section.text);
+  if (!matches.length) {
+    return;
+  }
+
+  const marks = element.findAll('mark');
+  for (const match of matches.filter((match) => match.isMultiline)) {
+    if (!marks.some((mark) => mark.innerText === match.highlightText)) {
+      const mark = wrapFirstTextOccurrence(element, match.highlightText);
+      if (mark) {
+        marks.push(mark);
+      }
+    }
+  }
+
+  if (!marks.length) {
+    return;
+  }
+
   let counter = 0;
 
   for (const mark of marks) {
@@ -118,10 +132,11 @@ function findAnnotatedHighlights(content: string): HighlightMatch[] {
     matches.push({
       highlightText: content.substring(afterStart, endIdx).replace(/^\n/, '').replace(/\n$/, ''),
       comment: commentMatch ? commentMatch[1] : '',
+      isMultiline: true,
     });
   }
 
-  const annotatedRegex = /==([^=]+)==<!--([\s\S]*?)-->/g;
+  const annotatedRegex = /==([^=]+)==\s*<!--([\s\S]*?)-->/g;
   for (
     let match = annotatedRegex.exec(content);
     match !== null;
@@ -130,8 +145,34 @@ function findAnnotatedHighlights(content: string): HighlightMatch[] {
     matches.push({
       highlightText: match[1],
       comment: match[2],
+      isMultiline: false,
     });
   }
 
   return matches;
+}
+
+function wrapFirstTextOccurrence(root: HTMLElement, text: string): HTMLElement | null {
+  const doc = root.ownerDocument;
+  const showText = doc.defaultView?.NodeFilter.SHOW_TEXT ?? 4;
+  const walker = doc.createTreeWalker(root, showText);
+
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const textNode = node as Text;
+    const index = textNode.data.indexOf(text);
+    if (index === -1) {
+      continue;
+    }
+
+    const range = doc.createRange();
+    range.setStart(textNode, index);
+    range.setEnd(textNode, index + text.length);
+
+    const mark = doc.createElement('mark');
+    mark.addClass('reading-assistant-highlight');
+    range.surroundContents(mark);
+    return mark;
+  }
+
+  return null;
 }

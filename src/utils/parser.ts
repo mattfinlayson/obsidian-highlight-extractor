@@ -5,7 +5,7 @@
 import { MARKER_END, MARKER_START } from '../annotations/utils';
 import type { Comment, Highlight, ParsedDocument } from '../models/types';
 
-const KNOWN_COLOR_NAMES = new Set([
+const DEFAULT_COLOR_NAMES = [
   'lightpink',
   'palegreen',
   'paleturquoise',
@@ -17,7 +17,7 @@ const KNOWN_COLOR_NAMES = new Set([
   'orange',
   'pink',
   'purple',
-]);
+];
 
 /**
  * Parse all highlights from document content
@@ -89,14 +89,17 @@ export function parseHighlights(content: string): Highlight[] {
 /**
  * Parse all HTML comments from document content
  */
-export function parseComments(content: string): Comment[] {
+export function parseComments(
+  content: string,
+  colorOptions: string[] = DEFAULT_COLOR_NAMES,
+): Comment[] {
   const comments: Comment[] = [];
   const regex = /<!--([\s\S]*?)-->/g;
 
   for (let match = regex.exec(content); match !== null; match = regex.exec(content)) {
     const text = match[1].trim();
     if (text.length > 0) {
-      const colorTag = extractKnownColorTag(text);
+      const colorTag = extractKnownColorTag(text, colorOptions);
 
       comments.push({
         text,
@@ -110,14 +113,14 @@ export function parseComments(content: string): Comment[] {
   return comments;
 }
 
-function extractKnownColorTag(text: string): string | null {
+function extractKnownColorTag(text: string, colorOptions: string[]): string | null {
   const colorTagMatch = text.match(/(?:^|\s)@(\w+)\s*$/);
   if (!colorTagMatch) {
     return null;
   }
 
   const colorTag = colorTagMatch[1];
-  return KNOWN_COLOR_NAMES.has(colorTag) ? colorTag : null;
+  return new Set(colorOptions).has(colorTag) ? colorTag : null;
 }
 
 /**
@@ -158,7 +161,7 @@ function associateCommentsWithHighlights(highlights: Highlight[], comments: Comm
 
       for (const highlight of highlights) {
         // Comment must come after highlight
-        if (comment.startIndex > highlight.endIndex) {
+        if (comment.startIndex >= highlight.endIndex) {
           const distance = comment.startIndex - highlight.endIndex;
           if (distance < nearestDistance) {
             nearestDistance = distance;
@@ -179,9 +182,12 @@ function associateCommentsWithHighlights(highlights: Highlight[], comments: Comm
 /**
  * Parse both highlights and comments, filling heading contexts and associating comments
  */
-export function parseDocument(content: string): ParsedDocument {
+export function parseDocument(
+  content: string,
+  colorOptions: string[] = DEFAULT_COLOR_NAMES,
+): ParsedDocument {
   const highlights = parseHighlights(content);
-  const comments = parseComments(content);
+  const comments = parseComments(content, colorOptions);
 
   // Fill heading context for each highlight
   for (const highlight of highlights) {

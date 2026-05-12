@@ -2,7 +2,7 @@
  * Reading Assistant plugin - main entry point
  */
 import { Plugin } from 'obsidian';
-import { PluginSettings } from './models/types';
+import { type PluginSettings } from './models/types';
 import HighlightExtractorSettingTab from './SettingsTab';
 export default class ReadingAssistantPlugin extends Plugin {
     settings: PluginSettings;

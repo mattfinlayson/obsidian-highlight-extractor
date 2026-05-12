@@ -1,8 +1,8 @@
 /**
  * Highlight Extractor - Core extraction logic
  */
-import { TFile } from 'obsidian';
-import { PluginSettings } from './models/types';
+import type { TFile } from 'obsidian';
+import { type PluginSettings } from './models/types';
 /**
  * Find the insertion point for extracted content (after frontmatter)
  */

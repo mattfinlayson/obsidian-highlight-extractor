@@ -1,7 +1,7 @@
 /**
  * Formatter for LLM-optimized Markdown output
  */
-import { Highlight, Comment, FormatterOptions, ExtractedSection } from '../models/types';
+import type { Comment, ExtractedSection, FormatterOptions, Highlight } from '../models/types';
 /**
  * Default formatter options
  */
@@ -17,7 +17,7 @@ export declare function deduplicateHighlights(highlights: Highlight[]): Highligh
 /**
  * Format extraction result as LLM-optimized Markdown
  */
-export declare function formatExtraction(highlights: Highlight[], comments: Comment[], options: FormatterOptions, documentTitle: string): string;
+export declare function formatExtraction(highlights: Highlight[], _comments: Comment[], options: FormatterOptions, documentTitle: string): string;
 /**
  * Create an ExtractedSection from formatted content
  */

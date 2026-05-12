@@ -58,10 +58,15 @@ export default class HighlightExtractorSettingTab extends SettingTab {
       .addTextArea((textArea) => {
         textArea.setValue(this.plugin.settings.annotationColors.join(', '));
         textArea.onChange(async (value: string) => {
-          this.plugin.settings.annotationColors = value
+          const colors = value
             .split(',')
             .map((color) => color.trim())
             .filter(Boolean);
+          this.plugin.settings.annotationColors.splice(
+            0,
+            this.plugin.settings.annotationColors.length,
+            ...colors,
+          );
           await this.plugin.saveSettings();
         });
       });

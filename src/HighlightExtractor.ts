@@ -79,7 +79,7 @@ export async function extractHighlights(
   const content = await app.vault.read(file);
 
   // Parse document
-  const parsed = parseDocument(content);
+  const parsed = parseDocument(content, settings.annotationColors);
 
   if (parsed.highlights.length === 0) {
     return ''; // No highlights to extract

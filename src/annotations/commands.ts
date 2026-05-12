@@ -1,3 +1,4 @@
+import type { EditorView } from '@codemirror/view';
 import { type Editor, Notice } from 'obsidian';
 import { createHighlight, createMultilineHighlight } from './extension';
 import { escapeRegExp, MARKER_END, MARKER_START } from './utils';
@@ -9,7 +10,7 @@ interface EditorPosition {
 
 interface AnnotationEditor extends Editor {
   blur(): void;
-  cm: unknown;
+  cm?: unknown;
   getCursor(position?: 'from' | 'to'): EditorPosition;
   getLine(line: number): string;
   getRange(from: EditorPosition, to: EditorPosition): string;
@@ -33,7 +34,11 @@ export function createHighlightCommand(editor: Editor, expandSelection = true): 
   }
 
   annotationEditor.blur();
-  annotationEditor.cm;
+
+  if (!isEditorView(annotationEditor.cm)) {
+    new Notice('Unable to create annotation in this editor view');
+    return false;
+  }
 
   const sameLine =
     annotationEditor.getCursor('from').line === annotationEditor.getCursor('to').line;
@@ -96,6 +101,12 @@ export function deleteAnnotationCommand(editor: Editor): boolean {
     return false;
   }
 
+  if (
+    !isCursorInsideRange(cursor, { line: startLine, ch: startCh }, { line: endLine, ch: endCh })
+  ) {
+    return deleteSingleLineHighlightAtCursor(annotationEditor);
+  }
+
   const contentStartCh = startCh + `${MARKER_START}${startId}%%`.length;
   const content = annotationEditor.getRange(
     { line: startLine, ch: contentStartCh },
@@ -104,7 +115,7 @@ export function deleteAnnotationCommand(editor: Editor): boolean {
   const cleanContent = content.startsWith('\n') ? content.substring(1) : content;
 
   const endLineText = annotationEditor.getLine(endLine);
-  const commentMatch = endLineText.substring(endCh).match(/^<!--[\s\S]*?-->/);
+  const commentMatch = endLineText.substring(endCh).match(/^\s*<!--[\s\S]*?-->/);
   const deleteEndCh = commentMatch ? endCh + commentMatch[0].length : endCh;
 
   annotationEditor.replaceRange(
@@ -121,10 +132,10 @@ export function clearAllAnnotationsCommand(editor: Editor): boolean {
   const annotationEditor = editor as AnnotationEditor;
   let cleaned = annotationEditor.getValue();
 
-  cleaned = cleaned.replace(/(%%highlight-end:[^%]+%%)<!--[\s\S]*?-->/g, '$1');
+  cleaned = cleaned.replace(/(%%highlight-end:[^%]+%%)\s*<!--[\s\S]*?-->/g, '$1');
   cleaned = cleaned.replace(new RegExp(`${escapeRegExp(MARKER_START)}([^%]+)%%\\n?`, 'g'), '');
   cleaned = cleaned.replace(new RegExp(`\\n?${escapeRegExp(MARKER_END)}([^%]+)%%`, 'g'), '');
-  cleaned = cleaned.replace(/==([\s\S]*?)==<!--[\s\S]*?-->/g, '$1');
+  cleaned = cleaned.replace(/==([\s\S]*?)==\s*<!--[\s\S]*?-->/g, '$1');
   cleaned = cleaned.replace(/==([\s\S]*?)==/g, '$1');
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
 
@@ -153,7 +164,7 @@ function deleteSingleLineHighlightAtCursor(editor: AnnotationEditor): boolean {
 
   const to = cursor.ch + endSearchIndex + 2;
   const highlighted = line.substring(startIdx + 2, to - 2);
-  const commentMatch = line.substring(to).match(/^<!--[\s\S]*?-->/);
+  const commentMatch = line.substring(to).match(/^\s*<!--[\s\S]*?-->/);
   const finalTo = commentMatch ? to + commentMatch[0].length : to;
 
   editor.replaceRange(
@@ -196,4 +207,34 @@ function expandSelectionBoundary(editor: AnnotationEditor): string {
 
   editor.setSelection({ line: from.line, ch: start }, { line: to.line, ch: end });
   return editor.getSelection();
+}
+
+function isEditorView(value: unknown): value is EditorView {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'state' in value &&
+    'dispatch' in value &&
+    'dom' in value
+  );
+}
+
+function isCursorInsideRange(
+  cursor: EditorPosition,
+  start: EditorPosition,
+  end: EditorPosition,
+): boolean {
+  if (cursor.line < start.line || cursor.line > end.line) {
+    return false;
+  }
+
+  if (cursor.line === start.line && cursor.ch < start.ch) {
+    return false;
+  }
+
+  if (cursor.line === end.line && cursor.ch > end.ch) {
+    return false;
+  }
+
+  return true;
 }

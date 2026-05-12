@@ -8,6 +8,7 @@ import {
   formatExtraction,
   mapColorTagToObsidianTag,
 } from '../src/utils/formatter';
+import { parseDocument } from '../src/utils/parser';
 
 describe('Formatter', () => {
   describe('mapColorTagToObsidianTag', () => {
@@ -132,6 +133,29 @@ describe('Formatter', () => {
       expect(result).toContain('> Comment: Follow up on this');
       expect(result).not.toContain('@blue');
     });
+
+    it('should format merged multiline annotations with comments and configured color tags', () => {
+      const parsed = parseDocument(
+        [
+          '%%highlight-start:abc123%%',
+          'Marked text',
+          '%%highlight-end:abc123%%<!-- Follow up on this @customcolor -->',
+        ].join('\n'),
+        ['customcolor'],
+      );
+
+      const result = formatExtraction(
+        parsed.highlights,
+        parsed.comments,
+        DEFAULT_FORMATTER_OPTIONS,
+        'test.md',
+      );
+
+      expect(result).toContain('> **Marked text**');
+      expect(result).toContain('> Tags: #highlight/customcolor');
+      expect(result).toContain('> Comment: Follow up on this');
+      expect(result).not.toContain('@customcolor');
+    });
   });
 
   describe('deduplication', () => {
@@ -162,6 +186,13 @@ describe('Formatter', () => {
 
       // Should have first, "Duplicate of third" (first occurrence), third
       expect(result).toContain('## Highlights (3)');
+      expect(result.indexOf('> **First**')).toBeLessThan(
+        result.indexOf('> **Duplicate of third**'),
+      );
+      expect(result.indexOf('> **Duplicate of third**')).toBeLessThan(
+        result.indexOf('> **Third**'),
+      );
+      expect(result.match(/> \*\*Duplicate of third\*\*/g)).toHaveLength(1);
     });
   });
 });

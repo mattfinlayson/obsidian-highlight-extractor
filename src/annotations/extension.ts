@@ -24,6 +24,7 @@ import {
 } from './utils';
 
 const showPopoverEffect = StateEffect.define<{ from: number; to: number }>();
+const popovers = new Set<HTMLElement>();
 
 interface HighlightMatch {
   from: number;
@@ -109,7 +110,7 @@ class HighlightWidget extends WidgetType {
 
     const refs = this.renderPopover();
     this.positionPopover(refs.container);
-    refs.container.showPopover();
+    showPopoverElement(refs.container);
     refs.textarea.focus();
     refs.textarea.setSelectionRange(refs.textarea.value.length, refs.textarea.value.length);
   }
@@ -132,7 +133,7 @@ class HighlightWidget extends WidgetType {
     removeButton.setAttribute('type', 'button');
     removeButton.setAttribute('aria-label', 'Remove annotation');
     removeButton.addEventListener('click', () => {
-      popover.hidePopover();
+      hidePopoverElement(popover);
       this.handleCommentRemoval();
     });
 
@@ -141,7 +142,7 @@ class HighlightWidget extends WidgetType {
     copyButton.setAttribute('type', 'button');
     copyButton.setAttribute('aria-label', 'Copy highlight');
     copyButton.addEventListener('click', async () => {
-      popover.hidePopover();
+      hidePopoverElement(popover);
       await view.dom.ownerDocument.defaultView?.navigator.clipboard.writeText(this.highlightText);
       new Notice('Copied to clipboard');
     });
@@ -150,7 +151,7 @@ class HighlightWidget extends WidgetType {
     newFileButton.setAttribute('type', 'button');
     newFileButton.setAttribute('aria-label', 'Extract highlight to new note');
     newFileButton.addEventListener('click', async () => {
-      popover.hidePopover();
+      hidePopoverElement(popover);
       await this.createFileFromHighlight(this.highlightText);
     });
 
@@ -203,7 +204,9 @@ class HighlightWidget extends WidgetType {
       return;
     }
 
-    popover?.hidePopover();
+    if (popover) {
+      hidePopoverElement(popover);
+    }
     const color = selectedColor ? ` @${selectedColor}` : '';
     this.handleCommentUpdate(`${comment.trim()}${color}`.trim());
   }
@@ -325,7 +328,7 @@ class HighlightWidget extends WidgetType {
     }
 
     const afterEnd = endIdx + endMarker.length;
-    const commentMatch = docText.substring(afterEnd).match(/^<!--[\s\S]*?-->/);
+    const commentMatch = docText.substring(afterEnd).match(/^\s*<!--[\s\S]*?-->/);
     const removeEnd = commentMatch ? afterEnd + commentMatch[0].length : afterEnd;
     return { startIdx, endIdx, endMarker, removeEnd };
   }
@@ -361,7 +364,7 @@ function findHighlightsAndComments(doc: Text, colorOptions: string[]): Highlight
 
     const content = docText.substring(afterStart, endIdx).replace(/^\n/, '').replace(/\n$/, '');
     const fullEnd = endIdx + endMarker.length;
-    const commentMatch = docText.substring(fullEnd).match(/^<!--([\s\S]*?)-->/);
+    const commentMatch = docText.substring(fullEnd).match(/^\s*<!--([\s\S]*?)-->/);
     const comment = commentMatch ? commentMatch[1] : undefined;
     const matchedColor = comment ? extractAnnotationColor(comment, colorOptions) : null;
     const hasComment = comment !== undefined && stripAnnotationColor(comment, colorOptions) !== '';
@@ -379,7 +382,7 @@ function findHighlightsAndComments(doc: Text, colorOptions: string[]): Highlight
     });
   }
 
-  const annotatedRegex = /==([^=]+)==<!--([\s\S]*?)-->/gm;
+  const annotatedRegex = /==([^=]+)==\s*<!--([\s\S]*?)-->/gm;
   for (
     let match = annotatedRegex.exec(docText);
     match !== null;
@@ -564,6 +567,32 @@ function getPopover(doc: Document): HTMLElement {
   const popover = doc.createElement('div');
   popover.id = 'reading-assistant-comment-popover';
   popover.setAttribute('popover', 'auto');
+  popover.hidden = true;
   doc.body.appendChild(popover);
+  popovers.add(popover);
   return popover;
+}
+
+export function cleanupPopovers(): void {
+  for (const popover of popovers) {
+    popover.remove();
+  }
+
+  popovers.clear();
+}
+
+function showPopoverElement(element: HTMLElement): void {
+  element.hidden = false;
+
+  if (typeof element.showPopover === 'function') {
+    element.showPopover();
+  }
+}
+
+function hidePopoverElement(element: HTMLElement): void {
+  if (typeof element.hidePopover === 'function') {
+    element.hidePopover();
+  }
+
+  element.hidden = true;
 }
