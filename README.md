@@ -1,4 +1,4 @@
-# Obsidian Highlight Extractor
+# Reading Assistant
 
 A plugin that lets you create annotated highlights in Obsidian, then collect those highlights and comments at the top of a document in a format ready for use with language models (ChatGPT, Claude, etc.).
 
@@ -58,14 +58,14 @@ The extracted section is clearly marked with `<!-- highlights -->` markers, so y
 ### Option 1: Community Plugins (Recommended)
 
 1. Open Obsidian → Settings → Community Plugins
-2. Search for "Highlight Extractor"
+2. Search for "Reading Assistant"
 3. Install and enable
 
 ### Option 2: Manual Installation
 
 1. Download the latest release from GitHub
 2. Extract and copy `main.js`, `manifest.json`, `styles.css` to:
-   `.obsidian/plugins/highlight-extractor/`
+   `.obsidian/plugins/obsidian-reading-assistant/`
 3. Enable in Community Plugins settings
 
 ## Usage
@@ -106,7 +106,7 @@ Multi-line highlighted text
 
 Default: `Cmd+Alt+E`
 
-Change it in Settings → Hotkeys → "Highlight Extractor: Extract Highlights"
+Change it in Settings → Hotkeys → "Reading Assistant: Extract Highlights"
 
 ## Settings
 

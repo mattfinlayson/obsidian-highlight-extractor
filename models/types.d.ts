@@ -1,5 +1,5 @@
 /**
- * TypeScript interfaces for Highlight Extractor Plugin
+ * TypeScript interfaces for Reading Assistant
  */
 export interface Highlight {
     text: string;

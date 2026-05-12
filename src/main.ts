@@ -1,5 +1,5 @@
 /**
- * Highlight Extractor Plugin - Main Entry Point
+ * Reading Assistant plugin - main entry point
  */
 
 import { Notice, Plugin } from 'obsidian';
@@ -14,7 +14,7 @@ import {
 import { highlightExtension } from './annotations/extension';
 import { annotationPostprocessor } from './annotations/postprocessor';
 
-export default class HighlightExtractorPlugin extends Plugin {
+export default class ReadingAssistantPlugin extends Plugin {
     settings: PluginSettings = DEFAULT_SETTINGS;
     settingsTab!: HighlightExtractorSettingTab;
     isHighlightingModeOn = false;
@@ -210,7 +210,7 @@ export default class HighlightExtractorPlugin extends Plugin {
             
             new Notice(`Extracted highlights to document`);
         } catch (error) {
-            console.error('Highlight Extractor Error:', error);
+            console.error('Reading Assistant error:', error);
             new Notice('Failed to extract highlights. Check console for details.');
         }
     }

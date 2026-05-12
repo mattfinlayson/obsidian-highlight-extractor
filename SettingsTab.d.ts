@@ -1,10 +1,10 @@
 /**
- * Highlight Extractor Settings Tab
+ * Reading Assistant settings tab
  */
 import { App, SettingTab } from 'obsidian';
-import type HighlightExtractorPlugin from './main';
+import type ReadingAssistantPlugin from './main';
 export default class HighlightExtractorSettingTab extends SettingTab {
-    plugin: HighlightExtractorPlugin;
-    constructor(app: App, plugin: HighlightExtractorPlugin);
+    plugin: ReadingAssistantPlugin;
+    constructor(app: App, plugin: ReadingAssistantPlugin);
     display(): void;
 }

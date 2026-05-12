@@ -1,10 +1,10 @@
 /**
- * Highlight Extractor Plugin - Main Entry Point
+ * Reading Assistant plugin - main entry point
  */
 import { Plugin } from 'obsidian';
 import { PluginSettings } from './models/types';
 import HighlightExtractorSettingTab from './SettingsTab';
-export default class HighlightExtractorPlugin extends Plugin {
+export default class ReadingAssistantPlugin extends Plugin {
     settings: PluginSettings;
     settingsTab: HighlightExtractorSettingTab;
     isHighlightingModeOn: boolean;

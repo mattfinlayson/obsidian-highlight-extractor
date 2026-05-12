@@ -1,16 +1,16 @@
 {
-  "id": "highlight-extractor",
-  "name": "Highlight Extractor",
+  "id": "obsidian-reading-assistant",
+  "name": "Reading Assistant",
   "version": "1.0.0",
   "minAppVersion": "1.0.0",
   "description": "Create, annotate, and extract highlights from documents for LLM consumption.",
   "author": "Matthew Finlayson",
   "authorUrl": "https://github.com/mattfinlayson",
   "license": "MIT",
-  "homepageUrl": "https://github.com/mattfinlayson/obsidian-highlight-extractor",
-  "issueUrl": "https://github.com/mattfinlayson/obsidian-highlight-extractor/issues",
+  "homepageUrl": "https://github.com/mattfinlayson/obsidian-reading-assistant",
+  "issueUrl": "https://github.com/mattfinlayson/obsidian-reading-assistant/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mattfinlayson/obsidian-highlight-extractor"
+    "url": "https://github.com/mattfinlayson/obsidian-reading-assistant"
   }
 }
