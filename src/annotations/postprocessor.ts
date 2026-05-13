@@ -1,4 +1,5 @@
 import { type MarkdownPostProcessorContext, MarkdownRenderChild } from 'obsidian';
+import { closeAnnotationPopover, openAnnotationPopover } from './popover';
 import { extractAnnotationColor, MARKER_END, MARKER_START, stripAnnotationColor } from './utils';
 
 interface HighlightMatch {
@@ -7,8 +8,13 @@ interface HighlightMatch {
   isMultiline: boolean;
 }
 
+interface ReadModeAnnotationActions {
+  onNewNote?: (text: string) => Promise<void>;
+}
+
 class MarginComment extends MarkdownRenderChild {
   private noteEl: HTMLElement;
+  private openedPopover = false;
 
   constructor(
     containerEl: HTMLElement,
@@ -16,6 +22,7 @@ class MarginComment extends MarkdownRenderChild {
     private readonly mark: HTMLElement,
     private readonly position: 'left' | 'right',
     private readonly color: string | null,
+    private readonly openPopover?: () => void,
   ) {
     super(containerEl);
     this.noteEl = containerEl.createDiv({ cls: 'reading-assistant-margin-comment' });
@@ -41,15 +48,40 @@ class MarginComment extends MarkdownRenderChild {
     });
     this.registerDomEvent(this.noteEl, 'mouseenter', () => this.mark.addClass('hover'));
     this.registerDomEvent(this.noteEl, 'mouseleave', () => this.mark.removeClass('hover'));
+
+    if (this.openPopover) {
+      this.registerDomEvent(this.mark, 'click', (event) => {
+        event.preventDefault();
+        this.openedPopover = true;
+        this.openPopover?.();
+      });
+      this.registerDomEvent(this.mark, 'keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') {
+          return;
+        }
+
+        event.preventDefault();
+        this.openedPopover = true;
+        this.openPopover?.();
+      });
+      this.mark.setAttribute('role', 'button');
+      this.mark.setAttribute('tabindex', '0');
+      this.mark.setAttribute('aria-label', 'Open annotation comment');
+    }
   }
 
   onunload(): void {
+    if (this.openedPopover) {
+      closeAnnotationPopover(this.mark.ownerDocument);
+    }
+
     this.noteEl.remove();
   }
 }
 
 export function annotationPostprocessor(
   colorOptions: string[],
+  actions: ReadModeAnnotationActions,
   element: HTMLElement,
   { getSectionInfo, addChild }: MarkdownPostProcessorContext,
 ): void {
@@ -65,7 +97,7 @@ export function annotationPostprocessor(
 
   const marks = element.findAll('mark');
   for (const match of matches.filter((match) => match.isMultiline)) {
-    if (!marks.some((mark) => mark.innerText === match.highlightText)) {
+    if (!marks.some((mark) => getElementText(mark) === match.highlightText)) {
       const mark = wrapFirstTextOccurrence(element, match.highlightText);
       if (mark) {
         marks.push(mark);
@@ -81,7 +113,7 @@ export function annotationPostprocessor(
 
   for (const mark of marks) {
     mark.addClass('reading-assistant-highlight');
-    const matchIndex = matches.findIndex((match) => match.highlightText === mark.innerText);
+    const matchIndex = matches.findIndex((match) => match.highlightText === getElementText(mark));
     if (matchIndex === -1) {
       continue;
     }
@@ -89,6 +121,10 @@ export function annotationPostprocessor(
     const match = matches.splice(matchIndex, 1)[0];
     const color = extractAnnotationColor(match.comment, colorOptions);
     const cleanComment = stripAnnotationColor(match.comment, colorOptions);
+
+    if (match.isMultiline) {
+      mark.addClass('multiline');
+    }
 
     if (color) {
       mark.style.backgroundColor = color;
@@ -101,9 +137,35 @@ export function annotationPostprocessor(
     mark.addClass('has-comment');
     mark.setAttribute('title', cleanComment);
     element.addClass('reading-assistant-section');
-    addChild(new MarginComment(element, cleanComment, mark, counter % 2 ? 'left' : 'right', color));
+    addChild(
+      new MarginComment(
+        element,
+        cleanComment,
+        mark,
+        counter % 2 ? 'left' : 'right',
+        color,
+        match.isMultiline
+          ? () => {
+              openAnnotationPopover({
+                mode: 'readonly',
+                anchorEl: mark,
+                highlightText: match.highlightText,
+                comment: match.comment,
+                colorOptions,
+                onNewNote: actions.onNewNote
+                  ? () => actions.onNewNote?.(match.highlightText)
+                  : undefined,
+              });
+            }
+          : undefined,
+      ),
+    );
     counter++;
   }
+}
+
+function getElementText(element: HTMLElement): string {
+  return element.innerText ?? element.textContent ?? '';
 }
 
 function findAnnotatedHighlights(content: string): HighlightMatch[] {

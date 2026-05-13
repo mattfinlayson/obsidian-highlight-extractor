@@ -15,6 +15,7 @@ import {
   WidgetType,
 } from '@codemirror/view';
 import { Notice } from 'obsidian';
+import { cleanupPopovers, closeAnnotationPopover, openAnnotationPopover } from './popover';
 import {
   extractAnnotationColor,
   generateAnnotationId,
@@ -24,7 +25,6 @@ import {
 } from './utils';
 
 const showPopoverEffect = StateEffect.define<{ from: number; to: number }>();
-const popovers = new Set<HTMLElement>();
 
 interface HighlightMatch {
   from: number;
@@ -35,11 +35,6 @@ interface HighlightMatch {
   hasColor: boolean;
   isMultiline?: boolean;
   annotationId?: string;
-}
-
-interface PopoverRefs {
-  container: HTMLElement;
-  textarea: HTMLTextAreaElement;
 }
 
 class HighlightWidget extends WidgetType {
@@ -108,92 +103,19 @@ class HighlightWidget extends WidgetType {
       return;
     }
 
-    const refs = this.renderPopover();
-    this.positionPopover(refs.container);
-    showPopoverElement(refs.container);
-    refs.textarea.focus();
-    refs.textarea.setSelectionRange(refs.textarea.value.length, refs.textarea.value.length);
-  }
-
-  private renderPopover(): PopoverRefs {
-    const view = this.view as EditorView;
-    const doc = view.dom.ownerDocument;
-    const popover = getPopover(doc);
-    popover.empty();
-
-    const initialColor = this.comment
-      ? extractAnnotationColor(this.comment, this.colorOptions)
-      : null;
-    const initialComment = this.comment
-      ? stripAnnotationColor(this.comment, this.colorOptions)
-      : '';
-
-    const toolbar = popover.createDiv({ cls: 'reading-assistant-popover-toolbar' });
-    const removeButton = toolbar.createEl('button', { text: 'Remove', cls: 'clickable-icon' });
-    removeButton.setAttribute('type', 'button');
-    removeButton.setAttribute('aria-label', 'Remove annotation');
-    removeButton.addEventListener('click', () => {
-      hidePopoverElement(popover);
-      this.handleCommentRemoval();
+    openAnnotationPopover({
+      mode: 'editable',
+      anchorEl: this.wrapperEl,
+      highlightText: this.highlightText,
+      comment: this.comment,
+      colorOptions: this.colorOptions,
+      onRemove: () => this.handleCommentRemoval(),
+      onNewNote: () => this.createFileFromHighlight(this.highlightText),
+      onSave: (comment, selectedColor) => this.saveComment(comment, selectedColor),
     });
-
-    const actions = toolbar.createDiv({ cls: 'reading-assistant-popover-actions' });
-    const copyButton = actions.createEl('button', { text: 'Copy', cls: 'clickable-icon' });
-    copyButton.setAttribute('type', 'button');
-    copyButton.setAttribute('aria-label', 'Copy highlight');
-    copyButton.addEventListener('click', async () => {
-      hidePopoverElement(popover);
-      await view.dom.ownerDocument.defaultView?.navigator.clipboard.writeText(this.highlightText);
-      new Notice('Copied to clipboard');
-    });
-
-    const newFileButton = actions.createEl('button', { text: 'New note', cls: 'clickable-icon' });
-    newFileButton.setAttribute('type', 'button');
-    newFileButton.setAttribute('aria-label', 'Extract highlight to new note');
-    newFileButton.addEventListener('click', async () => {
-      hidePopoverElement(popover);
-      await this.createFileFromHighlight(this.highlightText);
-    });
-
-    const textarea = popover.createEl('textarea', {
-      cls: 'reading-assistant-popover-comment',
-      text: initialComment,
-    }) as HTMLTextAreaElement;
-    textarea.rows = 5;
-    textarea.placeholder = 'Add a comment';
-    textarea.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        this.saveComment(textarea.value, initialColor);
-      }
-    });
-
-    const colorRow = popover.createDiv({ cls: 'reading-assistant-color-row' });
-    this.addColorButton(colorRow, textarea, null);
-    for (const color of this.colorOptions) {
-      this.addColorButton(colorRow, textarea, color);
-    }
-
-    return { container: popover, textarea };
-  }
-
-  private addColorButton(
-    parent: HTMLElement,
-    textarea: HTMLTextAreaElement,
-    color: string | null,
-  ): void {
-    const button = parent.createEl('button', {
-      cls: 'reading-assistant-color-button',
-    });
-    button.setAttribute('type', 'button');
-    button.setAttribute('aria-label', color ? `Save with ${color}` : 'Save without color');
-    button.style.backgroundColor = color || 'var(--text-highlight-bg)';
-    button.addEventListener('click', () => this.saveComment(textarea.value, color));
   }
 
   private saveComment(comment: string, selectedColor: string | null): void {
-    const popover = this.view ? getPopover(this.view.dom.ownerDocument) : null;
-
     if (comment.includes('-->')) {
       new Notice('Comment must not contain -->');
       return;
@@ -204,32 +126,11 @@ class HighlightWidget extends WidgetType {
       return;
     }
 
-    if (popover) {
-      hidePopoverElement(popover);
+    if (this.view) {
+      closeAnnotationPopover(this.view.dom.ownerDocument);
     }
     const color = selectedColor ? ` @${selectedColor}` : '';
     this.handleCommentUpdate(`${comment.trim()}${color}`.trim());
-  }
-
-  private positionPopover(popover: HTMLElement): void {
-    if (!this.wrapperEl || !this.view) {
-      return;
-    }
-
-    const win = this.view.dom.ownerDocument.defaultView;
-    if (!win) {
-      return;
-    }
-
-    const rect = this.wrapperEl.getBoundingClientRect();
-    const popoverRect = popover.getBoundingClientRect();
-    const centerOffset = (rect.width - popoverRect.width) / 2;
-    popover.style.top = `${rect.bottom + win.scrollY + 10}px`;
-    popover.style.left = `${rect.left + win.scrollX + centerOffset}px`;
-
-    if (rect.left + popoverRect.width > win.innerWidth) {
-      popover.style.left = `${win.innerWidth - popoverRect.width - 8}px`;
-    }
   }
 
   private handleCommentRemoval(): void {
@@ -558,41 +459,4 @@ export function createMultilineHighlight(editorView: unknown): boolean {
   return true;
 }
 
-function getPopover(doc: Document): HTMLElement {
-  const existing = doc.getElementById('reading-assistant-comment-popover');
-  if (existing) {
-    return existing;
-  }
-
-  const popover = doc.createElement('div');
-  popover.id = 'reading-assistant-comment-popover';
-  popover.setAttribute('popover', 'auto');
-  popover.hidden = true;
-  doc.body.appendChild(popover);
-  popovers.add(popover);
-  return popover;
-}
-
-export function cleanupPopovers(): void {
-  for (const popover of popovers) {
-    popover.remove();
-  }
-
-  popovers.clear();
-}
-
-function showPopoverElement(element: HTMLElement): void {
-  element.hidden = false;
-
-  if (typeof element.showPopover === 'function') {
-    element.showPopover();
-  }
-}
-
-function hidePopoverElement(element: HTMLElement): void {
-  if (typeof element.hidePopover === 'function') {
-    element.hidePopover();
-  }
-
-  element.hidden = true;
-}
+export { cleanupPopovers };

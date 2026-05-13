@@ -48,6 +48,7 @@ declare module 'obsidian' {
   }
 
   export class Notice {
+    static messages: string[];
     constructor(message: string, duration?: number);
   }
 
@@ -160,6 +161,7 @@ interface HTMLElement {
   addClass(className: string): void;
   createDiv(options?: DomCreateOptions): HTMLElement;
   createEl(tag: string, options?: DomCreateOptions): HTMLElement;
+  createSpan(options?: DomCreateOptions): HTMLElement;
   empty(): void;
   findAll(selector: string): HTMLElement[];
   removeClass(className: string): void;

@@ -74,7 +74,12 @@ export default class ReadingAssistantPlugin extends Plugin {
 
     this.registerHighlightModeEvents();
     this.registerMarkdownPostProcessor((element, context) =>
-      annotationPostprocessor(this.settings.annotationColors, element, context),
+      annotationPostprocessor(
+        this.settings.annotationColors,
+        { onNewNote: (text) => this.createFileFromHighlight(text) },
+        element,
+        context,
+      ),
     );
 
     // Add settings tab
