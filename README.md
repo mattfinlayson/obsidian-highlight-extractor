@@ -66,7 +66,7 @@ The extracted section is inserted as a collapsed Obsidian callout and is clearly
 
 1. Download the latest release from GitHub
 2. Extract and copy `main.js`, `manifest.json`, `styles.css` to:
-   `.obsidian/plugins/obsidian-reading-assistant/`
+   `.obsidian/plugins/reading-assistant/`
 3. Enable in Community Plugins settings
 
 ## Usage
