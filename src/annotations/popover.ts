@@ -1,4 +1,4 @@
-import { Notice } from 'obsidian';
+import { Notice, setIcon } from 'obsidian';
 import { extractAnnotationColor, stripAnnotationColor } from './utils';
 
 const popovers = new Set<HTMLElement>();
@@ -29,6 +29,7 @@ export type AnnotationPopoverOptions =
 export interface AnnotationPopoverRefs {
   container: HTMLElement;
   textarea: HTMLTextAreaElement;
+  editButton: HTMLButtonElement;
 }
 
 export function renderAnnotationPopover(options: AnnotationPopoverOptions): AnnotationPopoverRefs {
@@ -44,31 +45,38 @@ export function renderAnnotationPopover(options: AnnotationPopoverOptions): Anno
     : '';
 
   const toolbar = popover.createDiv({ cls: 'reading-assistant-popover-toolbar' });
+  const editorRegionId = 'reading-assistant-comment-popover-editor';
+  const removeButton = toolbar.createEl('button', {
+    cls: 'clickable-icon',
+  }) as HTMLButtonElement;
+  removeButton.setAttribute('type', 'button');
+  removeButton.setAttribute('aria-label', 'Remove annotation');
+  setIcon(removeButton, 'trash-2');
   if (options.mode === 'editable') {
-    const removeButton = toolbar.createEl('button', {
-      text: 'Remove',
-      cls: 'clickable-icon',
-    }) as HTMLButtonElement;
-    removeButton.setAttribute('type', 'button');
-    removeButton.setAttribute('aria-label', 'Remove annotation');
     removeButton.addEventListener('click', () => {
       hideAnnotationPopover(popover);
       options.onRemove();
     });
   } else {
-    toolbar.createSpan({
-      text: 'Comment',
-      cls: 'reading-assistant-popover-label',
-    });
+    removeButton.setAttribute('aria-disabled', 'true');
   }
+
+  const editButton = toolbar.createEl('button', {
+    cls: 'clickable-icon',
+  }) as HTMLButtonElement;
+  editButton.setAttribute('type', 'button');
+  editButton.setAttribute('aria-label', 'Edit annotation comment');
+  editButton.setAttribute('aria-controls', editorRegionId);
+  editButton.setAttribute('aria-expanded', 'false');
+  setIcon(editButton, 'pencil');
 
   const actions = toolbar.createDiv({ cls: 'reading-assistant-popover-actions' });
   const copyButton = actions.createEl('button', {
-    text: 'Copy',
     cls: 'clickable-icon',
   }) as HTMLButtonElement;
   copyButton.setAttribute('type', 'button');
   copyButton.setAttribute('aria-label', 'Copy highlight');
+  setIcon(copyButton, 'copy');
   copyButton.addEventListener('click', async () => {
     hideAnnotationPopover(popover);
 
@@ -82,11 +90,11 @@ export function renderAnnotationPopover(options: AnnotationPopoverOptions): Anno
   });
 
   const newFileButton = actions.createEl('button', {
-    text: 'New note',
     cls: 'clickable-icon',
   }) as HTMLButtonElement;
   newFileButton.setAttribute('type', 'button');
   newFileButton.setAttribute('aria-label', 'Extract highlight to new note');
+  setIcon(newFileButton, 'file-plus');
   newFileButton.disabled = !options.onNewNote;
   newFileButton.addEventListener('click', async () => {
     if (!options.onNewNote) {
@@ -97,7 +105,11 @@ export function renderAnnotationPopover(options: AnnotationPopoverOptions): Anno
     await options.onNewNote();
   });
 
-  const textarea = popover.createEl('textarea', {
+  const editorRegion = popover.createDiv({
+    cls: 'reading-assistant-popover-editor',
+  });
+  editorRegion.id = editorRegionId;
+  const textarea = editorRegion.createEl('textarea', {
     cls: 'reading-assistant-popover-comment',
     text: initialComment,
   }) as HTMLTextAreaElement;
@@ -113,15 +125,32 @@ export function renderAnnotationPopover(options: AnnotationPopoverOptions): Anno
     options.onSave(textarea.value, initialColor);
   });
 
-  if (options.mode === 'editable') {
-    const colorRow = popover.createDiv({ cls: 'reading-assistant-color-row' });
-    addColorButton(colorRow, textarea, null, options.onSave);
-    for (const color of options.colorOptions) {
-      addColorButton(colorRow, textarea, color, options.onSave);
-    }
+  const colorRow = editorRegion.createDiv({ cls: 'reading-assistant-color-row' });
+  addColorButton(
+    colorRow,
+    textarea,
+    null,
+    options.mode === 'editable' ? options.onSave : undefined,
+  );
+  for (const color of options.colorOptions) {
+    addColorButton(
+      colorRow,
+      textarea,
+      color,
+      options.mode === 'editable' ? options.onSave : undefined,
+    );
   }
 
-  return { container: popover, textarea };
+  editButton.addEventListener('click', () => {
+    const isEditing = popover.classList.toggle('is-editing');
+    editButton.setAttribute('aria-expanded', String(isEditing));
+    if (isEditing) {
+      textarea.focus();
+      textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+    }
+  });
+
+  return { container: popover, textarea, editButton };
 }
 
 export function openAnnotationPopover(options: AnnotationPopoverOptions): AnnotationPopoverRefs {
@@ -133,8 +162,7 @@ export function openAnnotationPopover(options: AnnotationPopoverOptions): Annota
   } finally {
     refs.container.style.visibility = '';
   }
-  refs.textarea.focus();
-  refs.textarea.setSelectionRange(refs.textarea.value.length, refs.textarea.value.length);
+  refs.editButton.focus();
   return refs;
 }
 
@@ -200,7 +228,7 @@ function addColorButton(
   parent: HTMLElement,
   textarea: HTMLTextAreaElement,
   color: string | null,
-  onSave: (comment: string, selectedColor: string | null) => void,
+  onSave: ((comment: string, selectedColor: string | null) => void) | undefined,
 ): void {
   const button = parent.createEl('button', {
     cls: 'reading-assistant-color-button',
@@ -208,7 +236,11 @@ function addColorButton(
   button.setAttribute('type', 'button');
   button.setAttribute('aria-label', color ? `Save with ${color}` : 'Save without color');
   button.style.backgroundColor = color || 'var(--text-highlight-bg)';
-  button.addEventListener('click', () => onSave(textarea.value, color));
+  if (onSave) {
+    button.addEventListener('click', () => onSave(textarea.value, color));
+  } else {
+    button.setAttribute('aria-disabled', 'true');
+  }
 }
 
 function positionAnnotationPopover(popover: HTMLElement, anchorEl: HTMLElement): void {

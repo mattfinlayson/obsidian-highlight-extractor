@@ -52,7 +52,10 @@ describe('annotation postprocessor', () => {
     mark.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     const popover = document.getElementById('reading-assistant-comment-popover') as HTMLElement;
     expect(popover).not.toBeNull();
-    expect(popover.querySelector('.reading-assistant-popover-label')?.textContent).toBe('Comment');
+    expect(popover.classList.contains('is-editing')).toBe(false);
+    expect(popover.querySelector('[data-icon="pencil"]')).not.toBeNull();
+    expect(popover.querySelector('[aria-label="Remove annotation"]')).not.toBeNull();
+    expect(popover.querySelector('.reading-assistant-color-row')).not.toBeNull();
     expect(popover.querySelector<HTMLTextAreaElement>('textarea')?.value).toBe('Note');
     expect(popover.querySelector<HTMLTextAreaElement>('textarea')?.readOnly).toBe(true);
 

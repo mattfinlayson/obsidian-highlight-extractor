@@ -52,6 +52,8 @@ declare module 'obsidian' {
     constructor(message: string, duration?: number);
   }
 
+  export function setIcon(parent: HTMLElement, iconId: string): void;
+
   export interface App {
     vault: Vault;
     workspace: Workspace;

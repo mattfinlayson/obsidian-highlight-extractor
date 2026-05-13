@@ -18,6 +18,7 @@ export type AnnotationPopoverOptions = EditableAnnotationPopoverOptions | Readon
 export interface AnnotationPopoverRefs {
     container: HTMLElement;
     textarea: HTMLTextAreaElement;
+    editButton: HTMLButtonElement;
 }
 export declare function renderAnnotationPopover(options: AnnotationPopoverOptions): AnnotationPopoverRefs;
 export declare function openAnnotationPopover(options: AnnotationPopoverOptions): AnnotationPopoverRefs;

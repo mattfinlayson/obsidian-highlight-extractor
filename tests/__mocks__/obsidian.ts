@@ -9,6 +9,13 @@ export class Notice {
 export class Plugin {}
 export class Setting {}
 export class SettingTab {}
+
+export function setIcon(parent: HTMLElement, iconId: string): void {
+  const icon = parent.ownerDocument.createElement('span');
+  icon.setAttribute('data-icon', iconId);
+  parent.appendChild(icon);
+}
+
 export class MarkdownRenderChild {
   containerEl: HTMLElement;
 

@@ -33,7 +33,7 @@ describe('annotation popover', () => {
     const onSave = jest.fn();
     const onRemove = jest.fn();
 
-    const { container, textarea } = openAnnotationPopover({
+    const { container, editButton, textarea } = openAnnotationPopover({
       mode: 'editable',
       anchorEl: anchor,
       highlightText: 'Important text',
@@ -44,8 +44,18 @@ describe('annotation popover', () => {
     });
 
     expect(container.querySelector('.reading-assistant-popover-label')).toBeNull();
+    expect(container.classList.contains('is-editing')).toBe(false);
+    expect(editButton.getAttribute('aria-expanded')).toBe('false');
+    expect(container.querySelector('[data-icon="trash-2"]')).not.toBeNull();
+    expect(container.querySelector('[data-icon="pencil"]')).not.toBeNull();
+    expect(container.querySelector('[data-icon="copy"]')).not.toBeNull();
+    expect(container.querySelector('[data-icon="file-plus"]')).not.toBeNull();
     expect(textarea.value).toBe('Original');
     expect(textarea.readOnly).toBe(false);
+
+    editButton.click();
+    expect(container.classList.contains('is-editing')).toBe(true);
+    expect(editButton.getAttribute('aria-expanded')).toBe('true');
 
     textarea.value = 'Updated';
     textarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
@@ -61,11 +71,11 @@ describe('annotation popover', () => {
     expect(onRemove).toHaveBeenCalledTimes(1);
   });
 
-  it('renders read-only comments without editing controls', async () => {
+  it('renders read-only comments with the same controls as editable popovers', async () => {
     const anchor = document.body.createDiv();
     const onNewNote = jest.fn().mockResolvedValue(undefined);
 
-    const { container, textarea } = openAnnotationPopover({
+    const { container, editButton, textarea } = openAnnotationPopover({
       mode: 'readonly',
       anchorEl: anchor,
       highlightText: 'Readonly text',
@@ -74,16 +84,34 @@ describe('annotation popover', () => {
       onNewNote,
     });
 
-    expect(container.querySelector('.reading-assistant-popover-label')?.textContent).toBe(
-      'Comment',
-    );
-    expect(container.querySelector('[aria-label="Remove annotation"]')).toBeNull();
-    expect(container.querySelector('.reading-assistant-color-row')).toBeNull();
+    expect(container.classList.contains('is-editing')).toBe(false);
+    expect(editButton.getAttribute('aria-expanded')).toBe('false');
+    expect(container.querySelector('[data-icon="trash-2"]')).not.toBeNull();
+    expect(container.querySelector('[data-icon="pencil"]')).not.toBeNull();
+    expect(container.querySelector('[data-icon="copy"]')).not.toBeNull();
+    expect(container.querySelector('[data-icon="file-plus"]')).not.toBeNull();
+    expect(container.querySelector('[aria-label="Remove annotation"]')).not.toBeNull();
+    expect(
+      container.querySelector('[aria-label="Remove annotation"]')?.getAttribute('aria-disabled'),
+    ).toBe('true');
+    expect(container.querySelector('.reading-assistant-color-row')).not.toBeNull();
     expect(textarea.value).toBe('Readonly comment');
     expect(textarea.readOnly).toBe(true);
 
+    editButton.click();
+    expect(container.classList.contains('is-editing')).toBe(true);
+    expect(editButton.getAttribute('aria-expanded')).toBe('true');
+
     textarea.value = 'Changed';
     textarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(onNewNote).not.toHaveBeenCalled();
+
+    const colorButtons = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('.reading-assistant-color-button'),
+    );
+    expect(colorButtons).toHaveLength(2);
+    expect(colorButtons[0].getAttribute('aria-disabled')).toBe('true');
+    colorButtons[1].click();
     expect(onNewNote).not.toHaveBeenCalled();
 
     container.querySelector<HTMLButtonElement>('[aria-label="Copy highlight"]')?.click();

@@ -59,6 +59,14 @@
   gap: 4px;
 }
 
+.reading-assistant-popover-editor {
+  display: none;
+}
+
+#reading-assistant-comment-popover.is-editing .reading-assistant-popover-editor {
+  display: block;
+}
+
 .reading-assistant-popover-comment {
   background: var(--background-primary);
   border: 0;
@@ -86,12 +94,6 @@
   min-height: 28px;
   padding: 0;
   width: 28px;
-}
-
-.reading-assistant-popover-label {
-  color: var(--text-muted);
-  font-size: var(--font-ui-small);
-  padding: 4px 8px;
 }
 
 .is-live-preview .reading-assistant-highlight,
