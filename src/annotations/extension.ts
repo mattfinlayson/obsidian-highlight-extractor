@@ -34,7 +34,10 @@ interface HighlightMatch {
   hasComment: boolean;
   hasColor: boolean;
   isMultiline?: boolean;
+  isLine?: boolean;
   annotationId?: string;
+  color?: string | null;
+  markerFrom?: number;
 }
 
 class HighlightWidget extends WidgetType {
@@ -325,6 +328,44 @@ function findHighlightsAndComments(doc: Text, colorOptions: string[]): Highlight
     });
   }
 
+  for (let lineNumber = 1; lineNumber <= doc.lines; lineNumber++) {
+    const lineInfo = doc.line(lineNumber);
+    const line = lineInfo.text;
+    const lineFrom = lineInfo.from;
+    const markerMatch = line.match(/%ra-highlight-([a-zA-Z0-9_-]+)%/);
+    if (!markerMatch || markerMatch.index === undefined) {
+      continue;
+    }
+
+    const markerFrom = lineFrom + markerMatch.index;
+    if (matches.some((existing) => markerFrom >= existing.from && markerFrom < existing.to)) {
+      continue;
+    }
+
+    const markerTo = markerFrom + markerMatch[0].length;
+    const commentMatch = line
+      .substring(markerMatch.index + markerMatch[0].length)
+      .match(/^\s*<!--([\s\S]*?)-->/);
+    const comment = commentMatch ? commentMatch[1] : `@${markerMatch[1]}`;
+    const fullEnd = commentMatch ? markerTo + commentMatch[0].length : markerTo;
+    const highlightText = line.substring(0, markerMatch.index).trim();
+    if (!highlightText) {
+      continue;
+    }
+
+    matches.push({
+      from: lineFrom,
+      to: fullEnd,
+      highlightText,
+      hasComment: stripAnnotationColor(comment, colorOptions) !== '',
+      hasColor: true,
+      comment,
+      isLine: true,
+      color: extractAnnotationColor(comment, colorOptions) ?? markerMatch[1],
+      markerFrom,
+    });
+  }
+
   return matches.sort((a, b) => a.from - b.from);
 }
 
@@ -336,6 +377,18 @@ function createHighlightDecorations(
   const decorations: Range<Decoration>[] = [];
 
   for (const match of findHighlightsAndComments(state.doc, colorOptions)) {
+    if (match.isLine) {
+      const markerStart = match.markerFrom ?? match.to;
+      decorations.push(
+        Decoration.mark({
+          class: 'reading-assistant-highlight reading-assistant-line-highlight has-comment',
+          attributes: match.color ? { style: `background-color: ${match.color};` } : undefined,
+        }).range(match.from, markerStart),
+      );
+      decorations.push(Decoration.replace({}).range(markerStart, match.to));
+      continue;
+    }
+
     decorations.push(
       Decoration.replace({
         widget: new HighlightWidget(

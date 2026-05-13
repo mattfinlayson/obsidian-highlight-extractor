@@ -1,11 +1,18 @@
 import { type MarkdownPostProcessorContext, MarkdownRenderChild } from 'obsidian';
 import { closeAnnotationPopover, openAnnotationPopover } from './popover';
-import { extractAnnotationColor, MARKER_END, MARKER_START, stripAnnotationColor } from './utils';
+import {
+  extractAnnotationColor,
+  LINE_MARKER_REGEX,
+  MARKER_END,
+  MARKER_START,
+  stripAnnotationColor,
+} from './utils';
 
 interface HighlightMatch {
   highlightText: string;
   comment: string;
   isMultiline: boolean;
+  isLine?: boolean;
 }
 
 interface ReadModeAnnotationActions {
@@ -94,6 +101,8 @@ export function annotationPostprocessor(
   if (!matches.length) {
     return;
   }
+
+  processLineMarkerElements(element, matches, colorOptions);
 
   const marks = element.findAll('mark');
   for (const match of matches.filter((match) => match.isMultiline)) {
@@ -211,7 +220,72 @@ function findAnnotatedHighlights(content: string): HighlightMatch[] {
     });
   }
 
+  for (const line of content.split('\n')) {
+    const markerMatch = LINE_MARKER_REGEX.exec(line);
+    if (!markerMatch) {
+      continue;
+    }
+
+    const markerIndex = markerMatch.index;
+    const highlightText = line.substring(0, markerIndex).trim();
+    if (!highlightText) {
+      continue;
+    }
+
+    const commentMatch = line
+      .substring(markerIndex + markerMatch[0].length)
+      .match(/^\s*<!--([\s\S]*?)-->/);
+    matches.push({
+      highlightText,
+      comment: commentMatch ? commentMatch[1] : `@${markerMatch[1]}`,
+      isMultiline: false,
+      isLine: true,
+    });
+  }
+
   return matches;
+}
+
+function processLineMarkerElements(
+  root: HTMLElement,
+  matches: HighlightMatch[],
+  colorOptions: string[],
+): void {
+  const blocks = root.querySelectorAll<HTMLElement>('p, li, h1, h2, h3, h4, h5, h6, blockquote');
+  for (const block of Array.from(blocks)) {
+    const text = getElementText(block);
+    const markerMatch = LINE_MARKER_REGEX.exec(text);
+    if (!markerMatch) {
+      continue;
+    }
+
+    removeLineMarkerText(block);
+    block.addClass('reading-assistant-highlight');
+    block.addClass('reading-assistant-line-highlight');
+    block.addClass('has-comment');
+
+    const match = matches.find(
+      (candidate) => candidate.isLine && text.includes(candidate.highlightText),
+    );
+    const comment = match?.comment ?? `@${markerMatch[1]}`;
+    const color = extractAnnotationColor(comment, colorOptions) ?? markerMatch[1];
+    block.style.backgroundColor = color;
+
+    const cleanComment = stripAnnotationColor(comment, colorOptions);
+    if (cleanComment) {
+      block.setAttribute('title', cleanComment);
+    }
+  }
+}
+
+function removeLineMarkerText(element: HTMLElement): void {
+  for (const node of Array.from(element.childNodes)) {
+    if (node.nodeType === Node.TEXT_NODE && node.nodeValue) {
+      node.nodeValue = node.nodeValue.replace(LINE_MARKER_REGEX, '').replace(/\s+$/, '');
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      removeLineMarkerText(node as HTMLElement);
+    }
+  }
 }
 
 function wrapFirstTextOccurrence(root: HTMLElement, text: string): HTMLElement | null {

@@ -2,7 +2,7 @@
  * Parser for highlights (==text==) and comments (<!--text-->)
  */
 
-import { MARKER_END, MARKER_START } from '../annotations/utils';
+import { LINE_MARKER_REGEX, MARKER_END, MARKER_START } from '../annotations/utils';
 import type { Comment, Highlight, ParsedDocument } from '../models/types';
 
 const DEFAULT_COLOR_NAMES = [
@@ -22,7 +22,10 @@ const DEFAULT_COLOR_NAMES = [
 /**
  * Parse all highlights from document content
  */
-export function parseHighlights(content: string): Highlight[] {
+export function parseHighlights(
+  content: string,
+  colorOptions: string[] = DEFAULT_COLOR_NAMES,
+): Highlight[] {
   const highlights: Highlight[] = [];
   const rangesToSkip: Array<{ start: number; end: number }> = [];
   const multilineStartRegex = new RegExp(
@@ -83,7 +86,61 @@ export function parseHighlights(content: string): Highlight[] {
     }
   }
 
+  const lineStartIndexes = getLineStartIndexes(content);
+  for (const { line, startIndex } of splitLinesWithStartIndexes(content, lineStartIndexes)) {
+    const markerMatch = LINE_MARKER_REGEX.exec(line);
+    if (!markerMatch) {
+      continue;
+    }
+
+    if (rangesToSkip.some((range) => startIndex >= range.start && startIndex < range.end)) {
+      continue;
+    }
+
+    const markerIndex = markerMatch.index;
+    const text = line.substring(0, markerIndex).trim();
+    if (!text) {
+      continue;
+    }
+
+    const colorTag = markerMatch[1];
+    highlights.push({
+      text,
+      startIndex,
+      endIndex: startIndex + markerIndex + markerMatch[0].length,
+      headingContext: '',
+      comments: colorOptions.includes(colorTag)
+        ? [
+            {
+              text: `@${colorTag}`,
+              colorTag,
+              startIndex: startIndex + markerIndex,
+              isColorDefinition: true,
+            },
+          ]
+        : [],
+    });
+  }
+
   return highlights.sort((a, b) => a.startIndex - b.startIndex);
+}
+
+function getLineStartIndexes(content: string): number[] {
+  const indexes = [0];
+  for (let index = content.indexOf('\n'); index !== -1; index = content.indexOf('\n', index + 1)) {
+    indexes.push(index + 1);
+  }
+  return indexes;
+}
+
+function splitLinesWithStartIndexes(
+  content: string,
+  lineStartIndexes: number[],
+): Array<{ line: string; startIndex: number }> {
+  return content.split('\n').map((line, index) => ({
+    line,
+    startIndex: lineStartIndexes[index],
+  }));
 }
 
 /**
@@ -186,7 +243,7 @@ export function parseDocument(
   content: string,
   colorOptions: string[] = DEFAULT_COLOR_NAMES,
 ): ParsedDocument {
-  const highlights = parseHighlights(content);
+  const highlights = parseHighlights(content, colorOptions);
   const comments = parseComments(content, colorOptions);
 
   // Fill heading context for each highlight

@@ -1,7 +1,7 @@
 import type { EditorView } from '@codemirror/view';
 import { type Editor, Notice } from 'obsidian';
 import { createHighlight, createMultilineHighlight } from './extension';
-import { escapeRegExp, MARKER_END, MARKER_START } from './utils';
+import { escapeRegExp, LINE_MARKER_REGEX, MARKER_END, MARKER_START } from './utils';
 
 interface EditorPosition {
   line: number;
@@ -76,7 +76,7 @@ export function deleteAnnotationCommand(editor: Editor): boolean {
   }
 
   if (startId === null || startCh === null) {
-    return deleteSingleLineHighlightAtCursor(annotationEditor);
+    return deleteAnySingleLineAnnotationAtCursor(annotationEditor);
   }
 
   const endMarker = `${MARKER_END}${startId}%%`;
@@ -104,7 +104,7 @@ export function deleteAnnotationCommand(editor: Editor): boolean {
   if (
     !isCursorInsideRange(cursor, { line: startLine, ch: startCh }, { line: endLine, ch: endCh })
   ) {
-    return deleteSingleLineHighlightAtCursor(annotationEditor);
+    return deleteAnySingleLineAnnotationAtCursor(annotationEditor);
   }
 
   const contentStartCh = startCh + `${MARKER_START}${startId}%%`.length;
@@ -128,6 +128,12 @@ export function deleteAnnotationCommand(editor: Editor): boolean {
   return true;
 }
 
+function deleteAnySingleLineAnnotationAtCursor(editor: AnnotationEditor): boolean {
+  return LINE_MARKER_REGEX.test(editor.getLine(editor.getCursor().line))
+    ? deleteLineHighlightAtCursor(editor)
+    : deleteSingleLineHighlightAtCursor(editor);
+}
+
 export function clearAllAnnotationsCommand(editor: Editor): boolean {
   const annotationEditor = editor as AnnotationEditor;
   let cleaned = annotationEditor.getValue();
@@ -135,12 +141,41 @@ export function clearAllAnnotationsCommand(editor: Editor): boolean {
   cleaned = cleaned.replace(/(%%highlight-end:[^%]+%%)\s*<!--[\s\S]*?-->/g, '$1');
   cleaned = cleaned.replace(new RegExp(`${escapeRegExp(MARKER_START)}([^%]+)%%\\n?`, 'g'), '');
   cleaned = cleaned.replace(new RegExp(`\\n?${escapeRegExp(MARKER_END)}([^%]+)%%`, 'g'), '');
+  cleaned = cleaned.replace(/[ \t]*%ra-highlight-[a-zA-Z0-9_-]+%[ \t]*(<!--[\s\S]*?-->)?/g, '');
   cleaned = cleaned.replace(/==([\s\S]*?)==\s*<!--[\s\S]*?-->/g, '$1');
   cleaned = cleaned.replace(/==([\s\S]*?)==/g, '$1');
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
 
   annotationEditor.setValue(cleaned);
   new Notice('All annotations cleared');
+  return true;
+}
+
+function deleteLineHighlightAtCursor(editor: AnnotationEditor): boolean {
+  const cursor = editor.getCursor();
+  const line = editor.getLine(cursor.line);
+  const markerMatch = LINE_MARKER_REGEX.exec(line);
+
+  if (!markerMatch) {
+    new Notice('No annotation found at cursor');
+    return false;
+  }
+
+  const markerIndex = markerMatch.index;
+  let markerStart = markerIndex;
+  while (markerStart > 0 && /[ \t]/.test(line[markerStart - 1])) {
+    markerStart--;
+  }
+  const markerEnd = markerIndex + markerMatch[0].length;
+  const commentMatch = line.substring(markerEnd).match(/^\s*<!--[\s\S]*?-->/);
+  const finalTo = commentMatch ? markerEnd + commentMatch[0].length : markerEnd;
+
+  editor.replaceRange(
+    '',
+    { line: cursor.line, ch: markerStart },
+    { line: cursor.line, ch: finalTo },
+  );
+  new Notice('Annotation removed');
   return true;
 }
 

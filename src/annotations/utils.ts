@@ -1,5 +1,8 @@
 export const MARKER_START = '%%highlight-start:';
 export const MARKER_END = '%%highlight-end:';
+export const LINE_MARKER_PREFIX = '%ra-highlight-';
+export const LINE_MARKER_SUFFIX = '%';
+export const LINE_MARKER_REGEX = /%ra-highlight-([a-zA-Z0-9_-]+)%/;
 
 export function generateAnnotationId(): string {
   return Math.random().toString(36).substring(2, 9);

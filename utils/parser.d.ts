@@ -5,7 +5,7 @@ import type { Comment, Highlight, ParsedDocument } from '../models/types';
 /**
  * Parse all highlights from document content
  */
-export declare function parseHighlights(content: string): Highlight[];
+export declare function parseHighlights(content: string, colorOptions?: string[]): Highlight[];
 /**
  * Parse all HTML comments from document content
  */

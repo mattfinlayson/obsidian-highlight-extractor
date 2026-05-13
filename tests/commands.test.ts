@@ -104,6 +104,18 @@ describe('annotation commands', () => {
     expect(editor.getValue()).toBe('A highlight B');
   });
 
+  it('deletes a line marker annotation while preserving line text', () => {
+    const editor = new FakeEditor('A highlighted line %ra-highlight-yellow%<!--note-->', {
+      line: 0,
+      ch: 4,
+    });
+
+    const result = deleteAnnotationCommand(editor as never);
+
+    expect(result).toBe(true);
+    expect(editor.getValue()).toBe('A highlighted line');
+  });
+
   it('clears annotations without removing non-annotation content', () => {
     const editor = new FakeEditor(
       [
@@ -111,6 +123,7 @@ describe('annotation commands', () => {
         '%%highlight-start:abc%%',
         'Two',
         '%%highlight-end:abc%% <!--comment-->',
+        'Three %ra-highlight-yellow%<!--line comment-->',
         'After',
       ].join('\n'),
       { line: 0, ch: 0 },
@@ -119,6 +132,6 @@ describe('annotation commands', () => {
     const result = clearAllAnnotationsCommand(editor as never);
 
     expect(result).toBe(true);
-    expect(editor.getValue()).toBe(['Before one', 'Two', 'After'].join('\n'));
+    expect(editor.getValue()).toBe(['Before one', 'Two', 'Three', 'After'].join('\n'));
   });
 });

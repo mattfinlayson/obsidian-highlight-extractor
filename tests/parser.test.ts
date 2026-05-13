@@ -46,6 +46,15 @@ describe('Parser', () => {
       expect(highlights[0].text).toBe('This spans\nmultiple lines');
     });
 
+    it('should extract line marker highlights', () => {
+      const content = 'Important line %ra-highlight-yellow%';
+      const highlights = parseHighlights(content);
+
+      expect(highlights).toHaveLength(1);
+      expect(highlights[0].text).toBe('Important line');
+      expect(highlights[0].comments?.[0].colorTag).toBe('yellow');
+    });
+
     it('should skip empty highlights', () => {
       const content = '== == and ==not empty==';
       const highlights = parseHighlights(content);
@@ -180,6 +189,20 @@ describe('Parser', () => {
       expect(result.highlights[0].comments).toHaveLength(1);
       expect(result.highlights[0].comments?.[0].text).toBe('Follow up @customcolor');
       expect(result.highlights[0].comments?.[0].colorTag).toBe('customcolor');
+    });
+
+    it('should associate line marker comments', () => {
+      const result = parseDocument(
+        'Important line %ra-highlight-yellow%<!-- Remember this @yellow -->',
+        ['yellow'],
+      );
+
+      expect(result.highlights).toHaveLength(1);
+      expect(result.highlights[0].text).toBe('Important line');
+      expect(result.highlights[0].comments?.map((comment) => comment.colorTag)).toContain('yellow');
+      expect(result.highlights[0].comments?.map((comment) => comment.text)).toContain(
+        'Remember this @yellow',
+      );
     });
   });
 

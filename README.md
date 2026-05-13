@@ -88,6 +88,8 @@ The extracted section is inserted as a collapsed Obsidian callout and is clearly
 %%highlight-start:abc123%%
 Multi-line highlighted text
 %%highlight-end:abc123%%<!-- A multi-line annotation @lightpink -->
+
+Line-level highlight %ra-highlight-yellow%
 ```
 
 ## Annotation Commands

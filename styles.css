@@ -122,6 +122,12 @@
   width: 100%;
 }
 
+.reading-assistant-line-highlight {
+  border-radius: 4px;
+  display: block;
+  padding-inline: 4px;
+}
+
 .reading-assistant-highlight.has-comment,
 .reading-assistant-highlight.hover {
   text-decoration: underline;

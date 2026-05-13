@@ -93,4 +93,22 @@ describe('annotation postprocessor', () => {
     expect(element.querySelector('mark')).toBeNull();
     expect(children).toHaveLength(0);
   });
+
+  it('renders line marker highlights as block highlights and hides marker text', () => {
+    const element = document.body.createDiv();
+    const paragraph = element.createEl('p');
+    paragraph.textContent = 'Important line %ra-highlight-yellow%';
+
+    annotationPostprocessor(['yellow'], {}, element, {
+      getSectionInfo: () => ({
+        text: 'Important line %ra-highlight-yellow%',
+      }),
+      addChild: jest.fn(),
+    });
+
+    expect(paragraph.textContent).toBe('Important line');
+    expect(paragraph.classList.contains('reading-assistant-line-highlight')).toBe(true);
+    expect(paragraph.classList.contains('reading-assistant-highlight')).toBe(true);
+    expect(paragraph.style.backgroundColor).toBe('yellow');
+  });
 });
