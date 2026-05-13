@@ -36,6 +36,12 @@ export default class ReadingAssistantPlugin extends Plugin {
     this.addCommand({
       id: 'create-highlight',
       name: 'Highlight selection',
+      hotkeys: [
+        {
+          modifiers: ['Mod', 'Alt'],
+          key: 'H',
+        },
+      ],
       editorCallback: (editor) =>
         createHighlightCommand(editor, this.settings.expandAnnotationSelection),
     });

@@ -79,6 +79,10 @@ function formatHighlightWithComments(
   return lines;
 }
 
+function formatCalloutLine(line: string): string {
+  return line ? `> ${line}` : '>';
+}
+
 /**
  * Deduplicate highlights while preserving order
  */
@@ -109,28 +113,27 @@ export function formatExtraction(
   lines.push(options.delimiterStart);
   lines.push('');
 
-  // Header
-  lines.push(`## Highlights (${processedHighlights.length})`);
-  lines.push('');
-  lines.push(`**Source**: [[${documentTitle}]]`);
+  // Collapsed Obsidian callout
+  lines.push(`> [!summary]- Highlights (${processedHighlights.length})`);
+  lines.push(`> **Source**: [[${documentTitle}]]`);
 
   if (options.includeTimestamp) {
-    lines.push(`| Extracted: ${new Date().toISOString()}`);
+    lines.push(`> | Extracted: ${new Date().toISOString()}`);
   }
 
-  lines.push('');
+  lines.push('>');
 
   // Highlights section with associated comments
-  lines.push('### Highlights');
-  lines.push('');
+  lines.push('> ### Highlights');
+  lines.push('>');
 
   if (processedHighlights.length === 0) {
-    lines.push('_No highlights found_');
+    lines.push('> _No highlights found_');
   } else {
     for (const highlight of processedHighlights) {
       const formattedLines = formatHighlightWithComments(highlight, options.colorToTagMapping);
-      lines.push(...formattedLines);
-      lines.push('');
+      lines.push(...formattedLines.map(formatCalloutLine));
+      lines.push('>');
     }
   }
 

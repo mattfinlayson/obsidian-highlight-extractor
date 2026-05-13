@@ -33,25 +33,26 @@ More content here with ==another highlight==.
 # Article Title
 
 <!-- highlights -->
-## Highlights (2)
-
-**Source**: [[article-title]] | Extracted: 2026-04-27T18:00:00Z
-
-### Highlights
-
-> **an important highlight that I want to remember**
-> Location: # Article Title
-> Comment: A note about this highlight
-
-> **another highlight**
-> Location: # Article Title
+> [!summary]- Highlights (2)
+> **Source**: [[article-title]]
+> | Extracted: 2026-04-27T18:00:00Z
+>
+> ### Highlights
+>
+> > **an important highlight that I want to remember**
+> > Location: # Article Title
+> > Comment: A note about this highlight
+>
+> > **another highlight**
+> > Location: # Article Title
+>
 
 <!-- /highlights -->
 
 This is some text with ==an important highlight==...
 ```
 
-The extracted section is clearly marked with `<!-- highlights -->` markers, so you can remove it or re-extract later.
+The extracted section is inserted as a collapsed Obsidian callout and is clearly marked with `<!-- highlights -->` markers, so you can remove it or re-extract later.
 
 ## Installation
 
@@ -104,9 +105,12 @@ Multi-line highlighted text
 
 ## Keyboard Shortcut
 
-Default: `Cmd+Alt+E`
+Defaults:
 
-Change it in Settings → Hotkeys → "Reading Assistant: Extract Highlights"
+- Highlight selection: `Cmd+Alt+H`
+- Extract highlights: `Cmd+Alt+E`
+
+Change them in Settings → Hotkeys.
 
 ## Settings
 

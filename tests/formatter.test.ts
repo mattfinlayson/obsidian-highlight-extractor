@@ -63,7 +63,15 @@ describe('Formatter', () => {
     it('should include highlight count', () => {
       const result = formatExtraction([sampleHighlight], [], DEFAULT_FORMATTER_OPTIONS, 'test.md');
 
-      expect(result).toContain('## Highlights (1)');
+      expect(result).toContain('> [!summary]- Highlights (1)');
+    });
+
+    it('should format extracted highlights as a collapsed Obsidian callout', () => {
+      const result = formatExtraction([sampleHighlight], [], DEFAULT_FORMATTER_OPTIONS, 'test.md');
+
+      expect(result).toContain('<!-- highlights -->\n\n> [!summary]- Highlights (1)');
+      expect(result).toContain('>\n> ### Highlights\n>');
+      expect(result).toContain('> > **This is a key insight**');
     });
 
     it('should include source reference', () => {
@@ -130,7 +138,7 @@ describe('Formatter', () => {
 
       const result = formatExtraction([highlight], [], DEFAULT_FORMATTER_OPTIONS, 'test.md');
 
-      expect(result).toContain('> Comment: Follow up on this');
+      expect(result).toContain('> > Comment: Follow up on this');
       expect(result).not.toContain('@blue');
     });
 
@@ -151,9 +159,9 @@ describe('Formatter', () => {
         'test.md',
       );
 
-      expect(result).toContain('> **Marked text**');
-      expect(result).toContain('> Tags: #highlight/customcolor');
-      expect(result).toContain('> Comment: Follow up on this');
+      expect(result).toContain('> > **Marked text**');
+      expect(result).toContain('> > Tags: #highlight/customcolor');
+      expect(result).toContain('> > Comment: Follow up on this');
       expect(result).not.toContain('@customcolor');
     });
   });
@@ -169,7 +177,7 @@ describe('Formatter', () => {
       const options = { ...DEFAULT_FORMATTER_OPTIONS, deduplicate: true };
       const result = formatExtraction(highlights, [], options, 'test.md');
 
-      expect(result).toContain('## Highlights (2)');
+      expect(result).toContain('> [!summary]- Highlights (2)');
     });
 
     it('should preserve order after dedup', () => {
@@ -185,14 +193,14 @@ describe('Formatter', () => {
       const result = formatExtraction(highlights, [], options, 'test.md');
 
       // Should have first, "Duplicate of third" (first occurrence), third
-      expect(result).toContain('## Highlights (3)');
-      expect(result.indexOf('> **First**')).toBeLessThan(
-        result.indexOf('> **Duplicate of third**'),
+      expect(result).toContain('> [!summary]- Highlights (3)');
+      expect(result.indexOf('> > **First**')).toBeLessThan(
+        result.indexOf('> > **Duplicate of third**'),
       );
-      expect(result.indexOf('> **Duplicate of third**')).toBeLessThan(
-        result.indexOf('> **Third**'),
+      expect(result.indexOf('> > **Duplicate of third**')).toBeLessThan(
+        result.indexOf('> > **Third**'),
       );
-      expect(result.match(/> \*\*Duplicate of third\*\*/g)).toHaveLength(1);
+      expect(result.match(/> > \*\*Duplicate of third\*\*/g)).toHaveLength(1);
     });
   });
 });
